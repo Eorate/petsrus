@@ -4,3 +4,6 @@ tags*
 provision.sh
 ps1_prompt.sh
 .tmux.conf
+*.swp
+*.pyc
+__pycache__/*
