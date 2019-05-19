@@ -1,3 +1,6 @@
 tags*
 *.un~
 .gitconfig
+provision.sh
+ps1_prompt.sh
+.tmux.conf
