@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from petsrus.petsrus import app
 
 if __name__ == "__main__":
