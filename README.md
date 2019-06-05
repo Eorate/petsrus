@@ -8,7 +8,7 @@ Implement website to manage pets.
 http://localhost/petrus/api/v1.0/
 ```
 
-**Resource list:**
+**Resource list**
 
 HTTP Method | URI | Action
 ------------|-----|-------
@@ -19,6 +19,36 @@ POST | `/pets` | Add a new pet
 GET | `/pets/<id>` | Retrieve details for a particular pet
 PUT | `/pets/<id>` | Change the details for a particular pet
 
-**Source:**
+**Sample env file**
+
+```
+$ less test.env
+export FLASK_ENV=development
+export APP_SETTINGS="config.TestingConfig"
+export DEBUG=True
+export DATABASE_URL=sqlite:///test.db
+export SECRET_KEY=<insert a random string here>
+export TESTING=True                         
+```
+
+**To run**
+
+```
+$ source test.env
+$ python3 run.py
+```
+
+**To run tests**
+
+```
+$ cd /home/vagrant/mypets
+$ source test.env
+# To run all tests
+$ python3 -m unittest
+# To run specific tests
+$ python3 -m unittest petsrus.tests.test_views
+```
+
+**Source**
 
 https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
