@@ -52,3 +52,4 @@ $ python3 -m unittest petsrus.tests.test_views
 **Source**
 
 https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
+https://realpython.com/flask-by-example-part-1-project-setup/
