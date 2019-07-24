@@ -49,7 +49,11 @@ $ python3 -m unittest
 $ python3 -m unittest petsrus.tests.test_views
 ```
 
-**Source**
+**Sources**
 
 https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
 https://realpython.com/flask-by-example-part-1-project-setup/
+https://overiq.com/sqlalchemy-101/defining-schema-in-sqlalchemy-orm/
+https://overiq.com/sqlalchemy-101/crud-using-sqlalchemy-orm/
+https://flask-sqlalchemy.palletsprojects.com/en/2.x/
+https://www.pythoncentral.io/introductory-tutorial-python-sqlalchemy/
