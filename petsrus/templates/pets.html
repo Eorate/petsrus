@@ -1,0 +1,11 @@
+<!doctype html>
+<title>PetsRUs</title>
+{% if pets %}
+<ul>
+    {% for pet in pets %}
+    <li> Name: {{pet.name}} Breed: {{pet.breed}} Species: {{pet.species}} </li>
+    {% endfor %}
+</ul>
+{% else %}
+    No pets found.
+{% endif %}
