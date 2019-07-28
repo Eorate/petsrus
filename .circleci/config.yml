@@ -32,7 +32,7 @@ jobs:
 
       - run:
           name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.3.0
 
@@ -50,9 +50,9 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo python3 -m venv venv
+            python3 -m venv venv
             source venv/bin/activate
-            sudo python3 -m pip install -r requirements.txt
+            python3 -m pip install -r requirements.txt
 
       - save_cache:
           paths:
@@ -64,7 +64,7 @@ jobs:
           name: run tests
           command: |
             source venv/bin/activate
-            sudo python3 -m unittest
+            python3 -m unittest
 
       - store_artifacts:
           path: test-reports
