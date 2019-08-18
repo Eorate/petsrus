@@ -11,7 +11,7 @@ class Config(object):
 
 class ProductionConfig(Config):
     DEBUG = os.environ.get("DEBUG", default=False)
-    if DEBUG.lower() in ("f", "false"):
+    if str(DEBUG).lower() in ("f", "false"):
         DEBUG = False
 
     SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
@@ -25,7 +25,7 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = os.environ.get("DEBUG", default=False)
-    if DEBUG.lower() in ("f", "false"):
+    if str(DEBUG).lower() in ("f", "false"):
         DEBUG = False
 
     SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
@@ -43,7 +43,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     DEBUG = os.environ.get("DEBUG", default=False)
-    if DEBUG.lower() in ("f", "false"):
+    if str(DEBUG).lower() in ("f", "false"):
         DEBUG = False
 
     SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
