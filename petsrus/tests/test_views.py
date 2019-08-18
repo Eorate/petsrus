@@ -2,23 +2,20 @@
 import unittest
 
 from datetime import date
-from sqlalchemy.orm import sessionmaker
 
-from petsrus.petsrus import app, engine
-from petsrus.models.models import Base, Pet
+from petsrus.petsrus import app
+from petsrus.models.models import Pet
+from petsrus.views.main import session
 
 
 class PetsRUsTests(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
         self.app.testing = True
-        Base.metadata.bind = engine
-        Base.metadata.create_all(engine)
-        DBSession = sessionmaker(bind=engine)
-        self.session = DBSession()
+        self.session = session
 
     def tearDown(self):
-        Base.metadata.drop_all(engine)
+        self.session.close()
 
     def test_index(self):
         result = self.app.get("/")
@@ -58,6 +55,8 @@ class PetsRUsTests(unittest.TestCase):
         expected_data = "<!doctype html>\n<title>PetsRUs</title>\n\n<ul>\n    \n    <li> Name: Max Breed: Jack Russell Terrier Species: canine </li>\n    \n    <li> Name: Duke Breed: Newfoundland Species: canine </li>\n    \n</ul>\n"  # noqa
         self.assertEqual(result.status_code, 200)
         self.assertEqual(bytes(expected_data, "utf-8"), result.data)
+        self.session.query(Pet).delete()
+        self.session.commit()
 
 
 if __name__ == "__main__":
