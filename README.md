@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/Eorate/petsrus/tree/develop.svg?style=shield)](https://circleci.com/gh/Eorate/petsrus/tree/develop)
+
 **Introduction**
 
 Implement website to manage pets.
