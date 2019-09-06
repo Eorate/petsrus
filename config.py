@@ -57,3 +57,5 @@ class TestingConfig(Config):
     SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get(
         "SQLALCHEMY_TRACK_MODIFICATIONS", default=False
     )
+    WTF_CSRF_ENABLED = False
+    CSRF_ENABLED = False
