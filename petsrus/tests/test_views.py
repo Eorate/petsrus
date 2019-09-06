@@ -96,7 +96,6 @@ class PetsRUsTests(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertEqual(response.status_code, 200)
-        print(response.get_data(as_text=True))
         self.assertTrue(
             "Please enter a valid email address" in response.get_data(as_text=True)
         )
