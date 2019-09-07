@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/Eorate/petsrus/tree/develop.svg?style=shield)](https://circleci.com/gh/Eorate/petsrus/tree/develop)
+[![Maintainability](https://api.codeclimate.com/v1/badges/f65b3b686e29acc8e177/maintainability)](https://codeclimate.com/github/Eorate/petsrus/maintainability)
 
 **Introduction**
 
