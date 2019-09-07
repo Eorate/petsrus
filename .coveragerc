@@ -1,0 +1,8 @@
+[run]
+branch = True
+omit =
+    # Everything in the virtual env
+    */env/lib/*
+
+[report]
+fail_under = 70

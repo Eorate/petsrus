@@ -40,6 +40,13 @@ jobs:
           name: Wait for db
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
 
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+          # download test reporter as a static binary
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -64,7 +71,12 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            python3 -m unittest
+          # notify Code Climate of a pending test report using `before-build`
+            ./cc-test-reporter before-build
+            coverage run -m unittest
+          # upload test report to Code Climate using `after-build`
+            ./cc-test-reporter after-build
+            coverage xml
 
       - store_artifacts:
           path: test-reports
