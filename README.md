@@ -29,6 +29,8 @@ export FLASK_ENV=development
 export APP_SETTINGS="config.TestingConfig"
 export DEBUG=True
 export DATABASE_URL=sqlite:///test.db
+# or 
+export DATABASE_URL="postgresql://<databaseuser>:<password>@<host>:5432/<database>"
 export SECRET_KEY=<insert a random string here>
 export TESTING=True                         
 ```

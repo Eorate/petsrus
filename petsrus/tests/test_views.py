@@ -10,26 +10,105 @@ from petsrus.views.main import session
 
 class PetsRUsTests(unittest.TestCase):
     def setUp(self):
-        self.app = app.test_client()
-        self.app.testing = True
+        self.client = app.test_client()
+        self.client.testing = True
         self.session = session
 
     def tearDown(self):
         self.session.close()
 
     def test_index(self):
-        result = self.app.get("/")
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(bytes("Login Page", "utf-8"), result.data)
+        """Test GET /"""
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Index Page" in response.get_data(as_text=True))
+
+    def test_register_user(self):
+        """Test POST /register"""
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrain",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        # We should be back in the index page
+        self.assertTrue("Index Page" in response.get_data(as_text=True))
+        self.assertTrue("Thanks for registering" in response.get_data(as_text=True))
+
+    def test_register_required_field_username_missing(self):
+        """Test that a missing username shows an error message"""
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Please enter your username" in response.get_data(as_text=True))
+
+    def test_register_validate_email_address(self):
+        """Test that a missing email shows an error message"""
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrain",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Please enter your email" in response.get_data(as_text=True))
+
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrain",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Please enter a valid email address" in response.get_data(as_text=True)
+        )
+
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrain",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain@example",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Please enter a valid email address" in response.get_data(as_text=True)
+        )
 
     def test_get_pets(self):
+        """Test GET /pets"""
         # No pets
-        result = self.app.get("/pets")
-        self.assertEqual(result.status_code, 200)
+        response = self.client.get("/pets")
+        self.assertEqual(response.status_code, 200)
         expected_data = (
             "<!doctype html>\n<title>PetsRUs</title>\n\n    No pets found.\n"
         )
-        self.assertEqual(bytes(expected_data, "utf-8"), result.data)
+        self.assertEqual(expected_data, response.get_data(as_text=True))
 
         # Add pets and test
         maxx = Pet(
@@ -51,10 +130,10 @@ class PetsRUsTests(unittest.TestCase):
         )
         self.session.add(duke)
         self.session.commit()
-        result = self.app.get("/pets")
+        response = self.client.get("/pets")
         expected_data = "<!doctype html>\n<title>PetsRUs</title>\n\n<ul>\n    \n    <li> Name: Max Breed: Jack Russell Terrier Species: canine </li>\n    \n    <li> Name: Duke Breed: Newfoundland Species: canine </li>\n    \n</ul>\n"  # noqa
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(bytes(expected_data, "utf-8"), result.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(expected_data, response.get_data(as_text=True))
         self.session.query(Pet).delete()
         self.session.commit()
 
