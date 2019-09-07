@@ -9,3 +9,4 @@ ps1_prompt.sh
 __pycache__/*
 *.env
 *.db
+.coverage
