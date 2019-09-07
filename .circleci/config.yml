@@ -74,8 +74,9 @@ jobs:
             # notify Code Climate of a pending test report using `before-build`
             ./cc-test-reporter before-build
             coverage run -m unittest
+            coverage report
             # upload test report to Code Climate using `after-build`
-            ./cc-test-reporter after-build --coverage-input-type coverage --exit-code $?
+            ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code $?
 
       - store_artifacts:
           path: test-reports
