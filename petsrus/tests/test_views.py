@@ -40,8 +40,8 @@ class PetsRUsTests(unittest.TestCase):
         self.assertTrue("Index Page" in response.get_data(as_text=True))
         self.assertTrue("Thanks for registering" in response.get_data(as_text=True))
 
-    def test_register_required_field_username_missing(self):
-        """Test that a missing username shows an error message"""
+    def test_register_validate_username(self):
+        """Test username validation"""
         response = self.client.post(
             "/register",
             data=dict(
@@ -55,8 +55,40 @@ class PetsRUsTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue("Please enter your username" in response.get_data(as_text=True))
 
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="th",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Username must be between 4 to 25 characters in length"
+            in response.get_data(as_text=True)
+        )
+
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrainthrainthrainthrainthrain",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Username must be between 4 to 25 characters in length"
+            in response.get_data(as_text=True)
+        )
+
     def test_register_validate_email_address(self):
-        """Test that a missing email shows an error message"""
+        """Test email address validation"""
         response = self.client.post(
             "/register",
             data=dict(
@@ -99,6 +131,54 @@ class PetsRUsTests(unittest.TestCase):
         self.assertTrue(
             "Please enter a valid email address" in response.get_data(as_text=True)
         )
+
+    def test_register_validate_password(self):
+        """Test password validation"""
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrain",
+                password="Aede",
+                confirm_password="",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Passwords must match" in response.get_data(as_text=True))
+        self.assertTrue(
+            "Password should be aleast 8 characters in length"
+            in response.get_data(as_text=True)
+        )
+
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrain",
+                password="Aede",
+                confirm_password="Aede",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Password should be aleast 8 characters in length"
+            in response.get_data(as_text=True)
+        )
+
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="thrain",
+                password="",
+                confirm_password="",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Please enter your password" in response.get_data(as_text=True))
 
     def test_get_pets(self):
         """Test GET /pets"""
