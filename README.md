@@ -1,5 +1,6 @@
 [![CircleCI](https://circleci.com/gh/Eorate/petsrus/tree/develop.svg?style=shield)](https://circleci.com/gh/Eorate/petsrus/tree/develop)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f65b3b686e29acc8e177/maintainability)](https://codeclimate.com/github/Eorate/petsrus/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/f65b3b686e29acc8e177/test_coverage)](https://codeclimate.com/github/Eorate/petsrus/test_coverage)
 
 **Introduction**
 
@@ -39,6 +40,8 @@ export TESTING=True
 **To run**
 
 ```
+$ cd /home/vagrant/mypets
+$ source env/bin/activate
 $ source test.env
 $ python3 run.py
 ```
@@ -47,11 +50,15 @@ $ python3 run.py
 
 ```
 $ cd /home/vagrant/mypets
+$ source env/bin/activate
 $ source test.env
 # To run all tests
 $ python3 -m unittest
 # To run specific tests
 $ python3 -m unittest petsrus.tests.test_views
+# To get coverage
+$ coverage run -m unittest
+$ coverage report
 ```
 
 **Sources**
@@ -62,3 +69,4 @@ $ python3 -m unittest petsrus.tests.test_views
 - https://overiq.com/sqlalchemy-101/crud-using-sqlalchemy-orm/
 - https://flask-sqlalchemy.palletsprojects.com/en/2.x/
 - https://www.pythoncentral.io/introductory-tutorial-python-sqlalchemy/
+- https://www.fullstackpython.com/flask-sqlalchemy-model-examples.html

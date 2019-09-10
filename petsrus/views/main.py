@@ -1,9 +1,10 @@
 from flask import render_template, redirect, request, url_for, flash
+from werkzeug.security import generate_password_hash
 
 from sqlalchemy.orm import sessionmaker
 
 from petsrus.petsrus import app, engine
-from petsrus.models.models import Base, Pet
+from petsrus.models.models import Base, Pet, User
 from petsrus.forms.forms import RegistrationForm
 
 
@@ -23,6 +24,15 @@ def register():
     form = RegistrationForm(request.form)
 
     if request.method == "POST" and form.validate():
+        user = User(
+            username=form.username.data,
+            password=generate_password_hash(form.password.data),
+            email_address=form.email_address.data,
+            telephone=form.telephone.data,
+            country=form.country.data,
+        )
+        session.add(user)
+        session.commit()
         flash("Thanks for registering", "info")
         return redirect(url_for("index"))
     else:
