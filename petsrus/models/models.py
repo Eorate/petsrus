@@ -9,7 +9,11 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    username = Column(String(32), index=True)
+    username = Column(String(32), unique=True, index=True)
+    password = Column(String(128), nullable=False)
+    email_address = Column(String(50), unique=True, index=True)
+    telephone = Column(String(20), nullable=True)
+    country = Column(String(50), nullable=True)
 
     def __repr__(self):
         return "<User {}>".format(self.username)

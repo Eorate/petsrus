@@ -4,7 +4,7 @@ import unittest
 from datetime import date
 
 from petsrus.petsrus import app
-from petsrus.models.models import Pet
+from petsrus.models.models import Pet, User
 from petsrus.views.main import session
 
 
@@ -15,6 +15,9 @@ class PetsRUsTests(unittest.TestCase):
         self.session = session
 
     def tearDown(self):
+        self.session.query(User).delete()
+        self.session.query(Pet).delete()
+        self.session.commit()
         self.session.close()
 
     def test_index(self):
@@ -39,6 +42,7 @@ class PetsRUsTests(unittest.TestCase):
         # We should be back in the index page
         self.assertTrue("Index Page" in response.get_data(as_text=True))
         self.assertTrue("Thanks for registering" in response.get_data(as_text=True))
+        self.assertEqual(1, self.session.query(User).count())
 
     def test_register_validate_username(self):
         """Test username validation"""
@@ -54,6 +58,7 @@ class PetsRUsTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue("Please enter your username" in response.get_data(as_text=True))
+        self.assertEqual(0, self.session.query(User).count())
 
         response = self.client.post(
             "/register",
@@ -70,6 +75,7 @@ class PetsRUsTests(unittest.TestCase):
             "Username must be between 4 to 25 characters in length"
             in response.get_data(as_text=True)
         )
+        self.assertEqual(0, self.session.query(User).count())
 
         response = self.client.post(
             "/register",
@@ -86,6 +92,7 @@ class PetsRUsTests(unittest.TestCase):
             "Username must be between 4 to 25 characters in length"
             in response.get_data(as_text=True)
         )
+        self.assertEqual(0, self.session.query(User).count())
 
     def test_register_validate_email_address(self):
         """Test email address validation"""
@@ -101,6 +108,7 @@ class PetsRUsTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue("Please enter your email" in response.get_data(as_text=True))
+        self.assertEqual(0, self.session.query(User).count())
 
         response = self.client.post(
             "/register",
@@ -116,6 +124,7 @@ class PetsRUsTests(unittest.TestCase):
         self.assertTrue(
             "Please enter a valid email address" in response.get_data(as_text=True)
         )
+        self.assertEqual(0, self.session.query(User).count())
 
         response = self.client.post(
             "/register",
@@ -131,6 +140,7 @@ class PetsRUsTests(unittest.TestCase):
         self.assertTrue(
             "Please enter a valid email address" in response.get_data(as_text=True)
         )
+        self.assertEqual(0, self.session.query(User).count())
 
     def test_register_validate_password(self):
         """Test password validation"""
@@ -150,6 +160,7 @@ class PetsRUsTests(unittest.TestCase):
             "Password should be aleast 8 characters in length"
             in response.get_data(as_text=True)
         )
+        self.assertEqual(0, self.session.query(User).count())
 
         response = self.client.post(
             "/register",
@@ -179,6 +190,7 @@ class PetsRUsTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue("Please enter your password" in response.get_data(as_text=True))
+        self.assertEqual(0, self.session.query(User).count())
 
     def test_get_pets(self):
         """Test GET /pets"""
