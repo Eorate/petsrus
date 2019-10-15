@@ -2,7 +2,8 @@
 <title>PetsRUs</title>
 <!--https://stackoverflow.com/questions/50787904/how-to-override-the-html-default-please-fill-out-this-field-when-validation-fa-->
 {% from "_formhelpers.html" import render_field %}
-<form method=post>
+<form action="{{ url_for('register') }}" method=post>
+    {{ form.csrf_token }}
     {{ render_field(form.username, required=False) }}
     {{ render_field(form.email_address, required=False) }}
     {{ render_field(form.password, required=False) }}

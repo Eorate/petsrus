@@ -7,6 +7,9 @@ from petsrus.petsrus import app
 from petsrus.models.models import Pet, User
 from petsrus.views.main import session
 
+# TO DO
+# Test that you cant register duplicate usernames or repeat email addresses
+
 
 class PetsRUsTests(unittest.TestCase):
     def setUp(self):
@@ -20,27 +23,80 @@ class PetsRUsTests(unittest.TestCase):
         self.session.commit()
         self.session.close()
 
+    def register_user_helper(self):
+        """Helper function to register user"""
+        return self.client.post(
+            "/register",
+            data=dict(
+                username="Ebodius",
+                password="Crimsaurus",
+                confirm_password="Crimsaurus",
+                email_address="ebodius@example.com",
+            ),
+            follow_redirects=True,
+        )
+
+    def login_user_helper(self):
+        """Helper function to login user"""
+        return self.client.post(
+            "/",
+            data=dict(username="Ebodius", password="Crimsaurus"),
+            follow_redirects=True,
+        )
+
     def test_index(self):
         """Test GET /"""
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("Index Page" in response.get_data(as_text=True))
+        self.assertTrue("Login" in response.get_data(as_text=True))
 
-    def test_register_user(self):
-        """Test POST /register"""
+    def test_login(self):
+        """Test login POST /"""
+        response = self.register_user_helper()
+        self.assertEqual(response.status_code, 200)
+
         response = self.client.post(
-            "/register",
-            data=dict(
-                username="thrain",
-                password="Aedelwulf",
-                confirm_password="Aedelwulf",
-                email_address="thrain@example.com",
-            ),
+            "/",
+            data=dict(username="Ebodius", password="Crimsaurus"),
             follow_redirects=True,
         )
         self.assertEqual(response.status_code, 200)
+        # We get redirected to the pets page
+        self.assertTrue("No pets found." in response.get_data(as_text=True))
+
+    def test_login_invalid_username_or_password(self):
+        """Test login POST / fails if wrong username or password"""
+        response = self.register_user_helper()
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/", data=dict(username="thrain", password="thrain")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTrue(
+            "Sorry, username or password was incorrect"
+            in response.get_data(as_text=True)
+        )
+
+    def test_logout(self):
+        """Test GET /logout"""
+        self.register_user_helper()
+        self.login_user_helper()
+
+        response = self.client.get("/pets")
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 302)
+
+    def test_register_user(self):
+        """Test POST /register"""
+        response = self.register_user_helper()
+        self.assertEqual(response.status_code, 200)
+
         # We should be back in the index page
-        self.assertTrue("Index Page" in response.get_data(as_text=True))
+        self.assertTrue("Login" in response.get_data(as_text=True))
         self.assertTrue("Thanks for registering" in response.get_data(as_text=True))
         self.assertEqual(1, self.session.query(User).count())
 
@@ -194,13 +250,13 @@ class PetsRUsTests(unittest.TestCase):
 
     def test_get_pets(self):
         """Test GET /pets"""
+        self.register_user_helper()
+        self.login_user_helper()
+
         # No pets
         response = self.client.get("/pets")
         self.assertEqual(response.status_code, 200)
-        expected_data = (
-            "<!doctype html>\n<title>PetsRUs</title>\n\n    No pets found.\n"
-        )
-        self.assertEqual(expected_data, response.get_data(as_text=True))
+        self.assertTrue("No pets found." in response.get_data(as_text=True))
 
         # Add pets and test
         maxx = Pet(
@@ -223,9 +279,19 @@ class PetsRUsTests(unittest.TestCase):
         self.session.add(duke)
         self.session.commit()
         response = self.client.get("/pets")
-        expected_data = "<!doctype html>\n<title>PetsRUs</title>\n\n<ul>\n    \n    <li> Name: Max Breed: Jack Russell Terrier Species: canine </li>\n    \n    <li> Name: Duke Breed: Newfoundland Species: canine </li>\n    \n</ul>\n"  # noqa
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(expected_data, response.get_data(as_text=True))
+        self.assertTrue(
+            "Name: Max Breed: Jack Russell Terrier Species: canine"
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "Name: Duke Breed: Newfoundland Species: canine"
+            in response.get_data(as_text=True)
+        )
+
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 302)
+
         self.session.query(Pet).delete()
         self.session.commit()
 

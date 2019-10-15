@@ -35,3 +35,13 @@ class RegistrationForm(FlaskForm):
     telephone = StringField("Telephone")
     country = StringField("Country")
     register = SubmitField("Register")
+
+
+class LoginForm(FlaskForm):
+    username = StringField(
+        "Username", validators=[DataRequired(message="Please enter your username")]
+    )
+    password = PasswordField(
+        "Password", validators=[DataRequired(message="Please enter your password")]
+    )
+    register = SubmitField("Login")

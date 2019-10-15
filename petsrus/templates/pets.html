@@ -1,11 +1,15 @@
 <!doctype html>
 <title>PetsRUs</title>
-{% if pets %}
-<ul>
-    {% for pet in pets %}
-    <li> Name: {{pet.name}} Breed: {{pet.breed}} Species: {{pet.species}} </li>
-    {% endfor %}
-</ul>
-{% else %}
-    No pets found.
+{% if current_user.is_authenticated %}
+    Hi {{ current_user.username }}!
+    <a href="/logout">Logout</a>
+    {% if pets %}
+    <ul>
+        {% for pet in pets %}
+        <li> Name: {{pet.name}} Breed: {{pet.breed}} Species: {{pet.species}} </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        No pets found.
+    {% endif %}
 {% endif %}
