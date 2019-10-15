@@ -59,3 +59,4 @@ class TestingConfig(Config):
     )
     WTF_CSRF_ENABLED = False
     CSRF_ENABLED = False
+    LOGIN_DISABLED = True

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import deferred
-from sqlalchemy import Column, Integer, String, Date, LargeBinary
+from sqlalchemy import Boolean, Column, Integer, String, Date, LargeBinary
 
 
 Base = declarative_base()
@@ -14,6 +14,20 @@ class User(Base):
     email_address = Column(String(50), unique=True, index=True)
     telephone = Column(String(20), nullable=True)
     country = Column(String(50), nullable=True)
+    authenticated = Column(Boolean, default=False)
+
+    def is_active(self):
+        """True, as all users are active."""
+        return True
+
+    def get_id(self):
+        return self.id
+
+    def is_authenticated(self):
+        return self.authenticated
+
+    def is_anonymous(self):
+        return False
 
     def __repr__(self):
         return "<User {}>".format(self.username)
