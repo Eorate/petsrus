@@ -70,9 +70,9 @@ class PetForm(FlaskForm):
         validators=[
             DataRequired(message="Please provide species details"),
             Length(
-                min=5,
+                min=4,
                 max=10,
-                message="Species must be between 5 to 10 characters in length",
+                message="Species must be between 4 to 10 characters in length",
             ),
         ],
     )
