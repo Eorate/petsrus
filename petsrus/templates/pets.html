@@ -2,7 +2,20 @@
 <title>PetsRUs</title>
 {% if current_user.is_authenticated %}
     Hi {{ current_user.username }}!
-    <a href="/logout">Logout</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <a href="{{ url_for('index') }}">Home</a>
+        {% from "_formhelpers.html" import render_field %}
+        <h1>Add Pet</h1>
+        <form method=post action="{{ url_for('pets') }}">
+            {{ form.csrf_token }}
+            {{ render_field(form.name, required=False) }}
+            {{ render_field(form.date_of_birth, required=False) }}
+            {{ render_field(form.species, required=False) }}
+            {{ render_field(form.breed, required=False) }}
+            {{ render_field(form.sex, required=False) }}
+            {{ render_field(form.colour_and_identifying_marks, required=False) }}
+          <input type=submit value=Save>
+        </form>
     {% if pets %}
     <ul>
         {% for pet in pets %}
@@ -12,4 +25,6 @@
     {% else %}
         No pets found.
     {% endif %}
+{% else %}
+    <a href="{{ url_for('login') }}">Login</a>
 {% endif %}

@@ -7,12 +7,10 @@
       {% endfor %}
    {% endif %}
 {% endwith %}
-{% from "_formhelpers.html" import render_field %}
-<h1>Login</h1>
-<form method=post>
-    {{ form.csrf_token }}
-    {{ render_field(form.username, required=False) }}
-    {{ render_field(form.password, required=False) }}
-  <input type=submit value=Login>
-</form>
-<a href="/register">No Account? Register</a>
+{% if current_user.is_authenticated %}
+    Hi {{ current_user.username }}!
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <a href="{{ url_for('pets') }}">Add Pet</a>
+{% else %}
+    <a href="{{ url_for('login') }}">Login</a>
+{% endif %}
