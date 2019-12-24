@@ -54,3 +54,4 @@ $ coverage report
 - https://flask-sqlalchemy.palletsprojects.com/en/2.x/
 - https://www.pythoncentral.io/introductory-tutorial-python-sqlalchemy/
 - https://www.fullstackpython.com/flask-sqlalchemy-model-examples.html
+- https://www.w3schools.com/bootstrap4/default.asp

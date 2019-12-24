@@ -40,10 +40,10 @@ class RegistrationForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     username = StringField(
-        "Username", validators=[DataRequired(message="Please enter your username")]
+        "Username:", validators=[DataRequired(message="Please enter your username")]
     )
     password = PasswordField(
-        "Password", validators=[DataRequired(message="Please enter your password")]
+        "Password:", validators=[DataRequired(message="Please enter your password")]
     )
     login = SubmitField("Login")
 

@@ -1,5 +1,15 @@
-<!doctype html>
-<title>PetsRUs</title>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PetsRUs</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
 {% with messages = get_flashed_messages() %}
    {% if messages %}
       {% for message in messages %}
@@ -8,9 +18,27 @@
    {% endif %}
 {% endwith %}
 {% if current_user.is_authenticated %}
+    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="navbar-brand mr-3">PetsRUs</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                 <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a href="{{ url_for('pets') }}" class="nav-item nav-link">Add Pet</a>
+                  </li>
+                </ul>
+                 <ul class="navbar-nav ml-auto">
+                  <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="nav-item nav-link">Logout</a>
+                  </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     Hi {{ current_user.username }}!
-    <a href="{{ url_for('logout') }}">Logout</a>
-    <a href="{{ url_for('pets') }}">Add Pet</a>
     {% if pets %}
     <ul>
         {% for pet in pets %}
@@ -22,13 +50,28 @@
     {% endif %}
 
 {% else %}
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-3">
+    <div class="container">
+    <a href="{{ url_for('index') }}" class="navbar-brand mr-3">PetsRUs</a>
+    </div>
+</nav>
     {% from "_formhelpers.html" import render_field %}
-    <h1>Login</h1>
+    <div class="container p-3 my-3 border bg-light">
+    <h1 class="text-center">Login</h1>
     <form method=post action="{{ url_for('index') }}">
-        {{ form.csrf_token }}
-        {{ render_field(form.username, required=False) }}
-        {{ render_field(form.password, required=False) }}
-      <input type=submit value=Login>
+      {{ form.csrf_token }}
+      <div class="form-group">
+        {{ render_field(form.username, class='form-control', placeholder="Enter username", required=False) }}
+      </div>
+      <div class="form-group">
+        {{ render_field(form.password, class='form-control', placeholder="Enter password", required=False) }}
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Login</button>
     </form>
-    <a href="{{ url_for('register') }}">No Account? Register</a>
+    </div>
+    <div class="container">
+        Don't have an account? <a href="{{ url_for('register') }}">Register</a>
+    </div>
 {% endif %}
+</body>
+</html>
