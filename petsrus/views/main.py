@@ -73,7 +73,7 @@ def index():
             login_user(user, remember=True)
             return redirect(url_for("index"))
         else:
-            flash("Sorry, username or password was incorrect", "error")
+            flash("Sorry, username or password was incorrect", "danger")
             return render_template("index.html", form=form)
     else:
         pets = db_session.query(Pet).all()

@@ -259,19 +259,19 @@ class PetsRUsTests(unittest.TestCase):
 
         # Add pets and test
         maxx = Pet(
-            name="Max",
+            name="max",
             date_of_birth=date(2001, 1, 1),
             species="canine",
-            breed="Jack Russell Terrier",
+            breed="jack russell terrier",
             sex="m",
             colour_and_identifying_marks="White with tan markings",
         )
         self.db_session.add(maxx)
         duke = Pet(
-            name="Duke",
+            name="duchess",
             date_of_birth=date(2001, 1, 2),
-            species="canine",
-            breed="Newfoundland",
+            species="feline",
+            breed="russian blue",
             sex="m",
             colour_and_identifying_marks="Black",
         )
@@ -279,14 +279,15 @@ class PetsRUsTests(unittest.TestCase):
         self.db_session.commit()
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
+        self.assertTrue("<td>Max</td>" in response.get_data(as_text=True))
         self.assertTrue(
-            "Name: Max Breed: Jack Russell Terrier Species: canine"
-            in response.get_data(as_text=True)
+            "<td>Jack Russell Terrier</td>" in response.get_data(as_text=True)
         )
-        self.assertTrue(
-            "Name: Duke Breed: Newfoundland Species: canine"
-            in response.get_data(as_text=True)
-        )
+        self.assertTrue("<td>Canine</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Edit | Delete</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Duchess</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
 
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
