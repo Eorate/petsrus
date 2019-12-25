@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, EqualTo, Email, Length
 
 class RegistrationForm(FlaskForm):
     username = StringField(
-        "Username",
+        "Username:",
         validators=[
             DataRequired(message="Please enter your username"),
             Length(
@@ -17,24 +17,24 @@ class RegistrationForm(FlaskForm):
         ],
     )
     password = PasswordField(
-        "Password",
+        "Password:",
         validators=[
             DataRequired(message="Please enter your password"),
             EqualTo("confirm_password", message="Passwords must match"),
             Length(min=8, message="Password should be aleast 8 characters in length"),
         ],
     )
-    confirm_password = PasswordField("Confirm password")
+    confirm_password = PasswordField("Confirm password:")
     email_address = StringField(
-        "Email address",
+        "Email address:",
         validators=[
             DataRequired(message="Please enter your email address"),
             Email(message="Please enter a valid email address"),
             Length(min=6, max=35),
         ],
     )
-    telephone = StringField("Telephone")
-    country = StringField("Country")
+    telephone = StringField("Telephone:")
+    country = StringField("Country:")
     register = SubmitField("Register")
 
 
@@ -50,7 +50,7 @@ class LoginForm(FlaskForm):
 
 class PetForm(FlaskForm):
     name = StringField(
-        "Name",
+        "Name:",
         validators=[
             DataRequired(message="Please enter a name"),
             Length(
@@ -61,12 +61,12 @@ class PetForm(FlaskForm):
         ],
     )
     date_of_birth = DateField(
-        "Date of Birth",
+        "Date of Birth:",
         format="%Y-%m-%d",
         validators=[DataRequired(message="Please enter a Date of Birth (YYYY-MM-DD)")],
     )
     species = StringField(
-        "Species",
+        "Species:",
         validators=[
             DataRequired(message="Please provide species details"),
             Length(
@@ -77,7 +77,7 @@ class PetForm(FlaskForm):
         ],
     )
     breed = StringField(
-        "Breed",
+        "Breed:",
         validators=[
             DataRequired(message="Please provide breed details"),
             Length(
@@ -88,11 +88,11 @@ class PetForm(FlaskForm):
         ],
     )
     sex = StringField(
-        "Sex",
+        "Sex:",
         validators=[
             DataRequired(message="Please provide pet sex details"),
             Length(min=1, max=1, message="Enter M or F for sex"),
         ],
     )
-    colour_and_identifying_marks = StringField("Colour and identifying marks")
+    colour_and_identifying_marks = StringField("Colour and identifying marks:")
     save = SubmitField("Save")
