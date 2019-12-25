@@ -7,9 +7,6 @@ from petsrus.petsrus import app
 from petsrus.models.models import Pet, User
 from petsrus.views.main import db_session
 
-# TO DO
-# Test that you cant register duplicate usernames or repeat email addresses
-
 
 class PetsRUsTests(unittest.TestCase):
     def setUp(self):
@@ -356,7 +353,6 @@ class PetsRUsTests(unittest.TestCase):
             "<td>Jack Russell Terrier</td>" in response.get_data(as_text=True)
         )
         self.assertTrue("<td>Canine</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>Edit | Delete</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Duchess</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
