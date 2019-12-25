@@ -149,6 +149,78 @@ class PetsRUsTests(unittest.TestCase):
         )
         self.assertEqual(0, self.db_session.query(User).count())
 
+    def test_register_duplicate_username(self):
+        """Test duplicate username validation"""
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="Aedel",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Thanks for registering" in response.get_data(as_text=True))
+        self.assertEqual(1, self.db_session.query(User).count())
+
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="Aedel",
+                password="Aedelwulf",
+                confirm_password="Aedelwulf",
+                email_address="thrain@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            (
+                "Sorry, Username &#39;Aedel&#39; or Email "
+                "&#39;thrain@example.com&#39; is already in use"
+            )
+            in response.get_data(as_text=True)
+        )
+        self.assertEqual(1, self.db_session.query(User).count())
+
+    def test_register_duplicate_email_address(self):
+        """Test duplicate email_address validation"""
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="Euronotus",
+                password="notuseuro",
+                confirm_password="notuseuro",
+                email_address="euronotus@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Thanks for registering" in response.get_data(as_text=True))
+        self.assertEqual(1, self.db_session.query(User).count())
+
+        response = self.client.post(
+            "/register",
+            data=dict(
+                username="Euronotus",
+                password="notuseuro",
+                confirm_password="notuseuro",
+                email_address="euronotus@example.com",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            (
+                "Sorry, Username &#39;Euronotus&#39; or Email "
+                "&#39;euronotus@example.com&#39; is already in use"
+            )
+            in response.get_data(as_text=True)
+        )
+        self.assertEqual(1, self.db_session.query(User).count())
+
     def test_register_validate_email_address(self):
         """Test email address validation"""
         response = self.client.post(

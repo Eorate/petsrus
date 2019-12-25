@@ -1,15 +1,22 @@
-<!doctype html>
-<title>PetsRUs</title>
+{% extends "base.html" %}
+
+{% block title %}PetsRUs - Register{% endblock %}
+{% block content %}
 <!--https://stackoverflow.com/questions/50787904/how-to-override-the-html-default-please-fill-out-this-field-when-validation-fa-->
 {% from "_formhelpers.html" import render_field %}
-<h1>Register</h1>
+<div class="container p-3 my-3 w-75 border rounded bg-light">
+<h1 class="text-center">Register</h1>
 <form action="{{ url_for('register') }}" method=post>
     {{ form.csrf_token }}
-    {{ render_field(form.username, required=False) }}
-    {{ render_field(form.email_address, required=False) }}
-    {{ render_field(form.password, required=False) }}
-    {{ render_field(form.confirm_password, required=False) }}
-    {{ render_field(form.telephone) }}
-    {{ render_field(form.country) }}
-  <input type=submit value=Register>
+    {{ render_field(form.username, class='form-control', placeholder="Username", required=False) }}
+    {{ render_field(form.email_address, class='form-control', placeholder="Email address", required=False) }}
+    {{ render_field(form.password, class='form-control', placeholder="Password", required=False) }}
+    {{ render_field(form.confirm_password, class='form-control', placeholder="Confirm password", required=False) }}
+    {{ render_field(form.telephone, class='form-control', placeholder="Telephone", required=False) }}
+    {{ render_field(form.country, class='form-control', placeholder="Country", required=False) }}
+  <div class="text-center">
+  <button type="submit" class="btn btn-primary w-25">Register</button>
+  </div>
 </form>
+</div>
+{% endblock %}
