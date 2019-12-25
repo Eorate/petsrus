@@ -1,16 +1,122 @@
-<!doctype html>
-<title>PetsRUs</title>
-{% with messages = get_flashed_messages() %}
-   {% if messages %}
-      {% for message in messages %}
-         {{ message }}
-      {% endfor %}
-   {% endif %}
-{% endwith %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PetsRUs</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
 {% if current_user.is_authenticated %}
-    Hi {{ current_user.username }}!
-    <a href="{{ url_for('logout') }}">Logout</a>
-    <a href="{{ url_for('pets') }}">Add Pet</a>
+    <!-- nav bar -->
+    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="navbar-brand mr-3">PetsRUs</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                 <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a href="{{ url_for('pets') }}" class="nav-item nav-link">Add Pet</a>
+                  </li>
+                </ul>
+                 <ul class="navbar-nav ml-auto">
+                  <li class="nav-item">
+                      <span class="nav-item nav-link disabled"> Logged in as: {{ current_user.username }}</span>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="nav-item nav-link">Logout</a>
+                  </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+    <!-- Pet list -->
+    <div class="container p-3">
+    <h5>My pets</h5>
+    {% if pets %}
+        <div class="table-responsive-sm">
+            <table class="table table-striped table-bordered table-hover">
+            <thead class="thead-dark">
+              <tr>
+                <th>Name</th>
+                <th>Breed</th>
+                <th>Species</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for pet in pets %}
+              <tr>
+                  <td>{{pet.name|title}}</td>
+                  <td>{{pet.breed|title}}</td>
+                  <td>{{pet.species|title}}</td>
+                  <td>Edit | Delete</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    {% else %}
+        No pets found.
+    {% endif %}
+    </div>
+
 {% else %}
-    <a href="{{ url_for('login') }}">Login</a>
+    <!-- Nav bar when not logged in -->
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-3">
+    <div class="container">
+    <a href="{{ url_for('index') }}" class="navbar-brand mr-3">PetsRUs</a>
+    </div>
+</nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+    <!-- Login form -->
+    {% from "_formhelpers.html" import render_field %}
+    <div class="container p-3 my-3 w-50 border rounded bg-light">
+    <h1 class="text-center">Login</h1>
+    <form method=post action="{{ url_for('index') }}">
+      {{ form.csrf_token }}
+      <div class="form-group">
+        {{ render_field(form.username, class='form-control', placeholder="Enter username", required=False) }}
+      </div>
+      <div class="form-group">
+        {{ render_field(form.password, class='form-control', placeholder="Enter password", required=False) }}
+      </div>
+      <div class="text-center">
+      <button type="submit" class="btn btn-primary w-25">Login</button>
+      </div>
+    </form>
+    </div>
+    <div class="container w-50">
+        Don't have an account? <a href="{{ url_for('register') }}">Register</a>
+    </div>
 {% endif %}
+</body>
+</html>

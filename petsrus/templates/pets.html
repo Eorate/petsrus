@@ -16,15 +16,6 @@
             {{ render_field(form.colour_and_identifying_marks, required=False) }}
           <input type=submit value=Save>
         </form>
-    {% if pets %}
-    <ul>
-        {% for pet in pets %}
-        <li> Name: {{pet.name}} Breed: {{pet.breed}} Species: {{pet.species}} </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-        No pets found.
-    {% endif %}
 {% else %}
     <a href="{{ url_for('login') }}">Login</a>
 {% endif %}

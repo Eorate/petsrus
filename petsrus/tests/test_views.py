@@ -39,7 +39,7 @@ class PetsRUsTests(unittest.TestCase):
     def login_user_helper(self):
         """Helper function to login user"""
         return self.client.post(
-            "/login",
+            "/",
             data=dict(username="Ebodius", password="Crimsaurus"),
             follow_redirects=True,
         )
@@ -53,12 +53,12 @@ class PetsRUsTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_login(self):
-        """Test login POST /login"""
+        """Test login POST /"""
         response = self.register_user_helper()
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post(
-            "/login",
+            "/",
             data=dict(username="Ebodius", password="Crimsaurus"),
             follow_redirects=True,
         )
@@ -70,7 +70,7 @@ class PetsRUsTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post(
-            "/login", data=dict(username="thrain", password="thrain")
+            "/", data=dict(username="thrain", password="thrain")
         )
         self.assertEqual(response.status_code, 200)
 
@@ -253,40 +253,41 @@ class PetsRUsTests(unittest.TestCase):
         self.login_user_helper()
 
         # No pets
-        response = self.client.get("/pets")
+        response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue("No pets found." in response.get_data(as_text=True))
 
         # Add pets and test
         maxx = Pet(
-            name="Max",
+            name="max",
             date_of_birth=date(2001, 1, 1),
             species="canine",
-            breed="Jack Russell Terrier",
+            breed="jack russell terrier",
             sex="m",
             colour_and_identifying_marks="White with tan markings",
         )
         self.db_session.add(maxx)
         duke = Pet(
-            name="Duke",
+            name="duchess",
             date_of_birth=date(2001, 1, 2),
-            species="canine",
-            breed="Newfoundland",
+            species="feline",
+            breed="russian blue",
             sex="m",
             colour_and_identifying_marks="Black",
         )
         self.db_session.add(duke)
         self.db_session.commit()
-        response = self.client.get("/pets")
+        response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
+        self.assertTrue("<td>Max</td>" in response.get_data(as_text=True))
         self.assertTrue(
-            "Name: Max Breed: Jack Russell Terrier Species: canine"
-            in response.get_data(as_text=True)
+            "<td>Jack Russell Terrier</td>" in response.get_data(as_text=True)
         )
-        self.assertTrue(
-            "Name: Duke Breed: Newfoundland Species: canine"
-            in response.get_data(as_text=True)
-        )
+        self.assertTrue("<td>Canine</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Edit | Delete</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Duchess</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
 
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
@@ -425,7 +426,7 @@ class PetsRUsTests(unittest.TestCase):
             data=dict(
                 name="Ace",
                 date_of_birth="2001-01-01",
-                species="cani",
+                species="can",
                 breed="German Shepherd",
                 sex="M",
                 color_and_identifying_marks="Black with brown patches",
@@ -434,7 +435,7 @@ class PetsRUsTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
-            "Species must be between 5 to 10 characters in length"
+            "Species must be between 4 to 10 characters in length"
             in response.get_data(as_text=True)
         )
         self.assertEqual(0, self.db_session.query(Pet).count())
@@ -453,7 +454,7 @@ class PetsRUsTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
-            "Species must be between 5 to 10 characters in length"
+            "Species must be between 4 to 10 characters in length"
             in response.get_data(as_text=True)
         )
         self.assertEqual(0, self.db_session.query(Pet).count())
