@@ -17,6 +17,6 @@ app.config.from_object(
 )
 
 # Create an engine that stores data in the env database
-engine = create_engine(app.config["DATABASE_URL"])
+engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
 
 from petsrus.views import main  # noqa
