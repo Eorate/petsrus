@@ -18,8 +18,8 @@ class ProductionConfig(Config):
     if not SECRET_KEY:
         raise ValueError("No secret key set for Flask application")
 
-    DATABASE_URL = os.environ.get("DATABASE_URL", default=None)
-    if not DATABASE_URL:
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", default=None)
+    if not SQLALCHEMY_DATABASE_URI:
         raise ValueError("No database url provided for Flask application")
 
 
