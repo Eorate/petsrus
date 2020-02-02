@@ -73,6 +73,30 @@ def pets():
         return render_template("pets.html", form=form)
 
 
+# https://stackoverflow.com/questions/47735329/updating-a-row-using-sqlalchemy-orm
+@app.route("/pets/<int:pet_id>", methods=["GET", "POST"])
+@login_required
+def edit_pets(pet_id):
+    pet = db_session.query(Pet).filter_by(id=pet_id).first()
+    form = PetForm(obj=pet)
+
+    if request.method == "GET":
+        return render_template("edit_pets.html", form=form, pet_id=pet_id)
+    elif request.method == "POST" and form.validate():
+        pet = db_session.query(Pet).get(pet_id)
+
+        pet.name = (form.name.data,)
+        pet.date_of_birth = (form.date_of_birth.data,)
+        pet.species = (form.species.data,)
+        pet.breed = (form.breed.data,)
+        pet.sex = (form.sex.data,)
+        pet.colour_and_identifying_marks = (form.colour_and_identifying_marks.data,)
+
+        db_session.commit()
+        flash("Updated Pet Details", "success")
+        return redirect(url_for("index"))
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     form = LoginForm(request.form)

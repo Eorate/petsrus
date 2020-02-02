@@ -348,12 +348,56 @@ class PetsRUsTests(unittest.TestCase):
         self.db_session.commit()
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("<td>Max</td>" in response.get_data(as_text=True))
+        self.assertTrue("Max" in response.get_data(as_text=True))
         self.assertTrue(
             "<td>Jack Russell Terrier</td>" in response.get_data(as_text=True)
         )
         self.assertTrue("<td>Canine</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>Duchess</td>" in response.get_data(as_text=True))
+        self.assertTrue("Duchess" in response.get_data(as_text=True))
+        self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
+
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 302)
+
+        self.db_session.query(Pet).delete()
+        self.db_session.commit()
+
+    def test_edit_pets(self):
+        """Test GET, POST /pets/<int:pet_id>"""
+        self.register_user_helper()
+        self.login_user_helper()
+
+        # No pets
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("No pets found." in response.get_data(as_text=True))
+
+        # Add pet
+        duke = Pet(
+            name="duchess",
+            date_of_birth=date(2001, 1, 2),
+            species="feline",
+            breed="russian blue",
+            sex="m",
+            colour_and_identifying_marks="Black",
+        )
+        self.db_session.add(duke)
+        self.db_session.commit()
+
+        # Edit Pet
+        response = self.client.get("/pets/{}".format(duke.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('value="duchess"' in response.get_data(as_text=True))
+        self.assertTrue('value="feline"' in response.get_data(as_text=True))
+        self.assertTrue('value="russian blue"' in response.get_data(as_text=True))
+
+        response = self.client.post(
+            "/pets/{}".format(duke.id),
+            data=dict(name="Sykes", species="feline", breed="russian blue"),
+            follow_redirects=True,
+        )
+        self.assertTrue("Sykes" in response.get_data(as_text=True))
         self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
 
