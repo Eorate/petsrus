@@ -70,7 +70,7 @@ def pets():
         flash("Saved Pet", "success")
         return redirect(url_for("index"))
     else:
-        return render_template("pets.html", form=form)
+        return render_template("pets.html", add=True, form=form)
 
 
 # https://stackoverflow.com/questions/47735329/updating-a-row-using-sqlalchemy-orm
@@ -81,7 +81,7 @@ def edit_pets(pet_id):
     form = PetForm(obj=pet)
 
     if request.method == "GET":
-        return render_template("edit_pets.html", form=form, pet_id=pet_id)
+        return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
     elif request.method == "POST" and form.validate():
         pet = db_session.query(Pet).get(pet_id)
 

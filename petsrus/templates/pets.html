@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}PetsRUs - Add Pet{% endblock %}
+{% block title %} PetsRUs -
+{% if add %}
+    Add Pet
+{% elif edit %}
+    Edit Pet
+{% endif %}
+{% endblock %}
+
 {% block navbar_content %}
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
         <span class="navbar-toggler-icon"></span>
@@ -25,8 +32,13 @@
 {% block content %}
     {% from "_formhelpers.html" import render_field %}
     <div class="container p-3 my-3 w-75 border rounded bg-light">
+{% if add %}
     <h1 class="text-center">Add Pet</h1>
     <form action="{{ url_for('pets') }}" method=post>
+{% elif edit %}
+    <h1 class="text-center">Edit Pet</h1>
+    <form action="{{ url_for('edit_pets', pet_id=pet_id) }}" method=post>
+{% endif %}
         {{ form.csrf_token }}
         {{ render_field(form.name, class='form-control', placeholder="Name", required=False) }}
         {{ render_field(form.date_of_birth, class='form-control', placeholder="Date of Birth", required=False) }}
@@ -35,7 +47,11 @@
         {{ render_field(form.sex, class='form-control', placeholder="Sex", required=False) }}
         {{ render_field(form.colour_and_identifying_marks, class='form-control', placeholder="Colour and identifying marks", required=False) }}
       <div class="text-center">
+{% if add %}
       <button type="submit" class="btn btn-primary w-25">Save</button>
+{% elif edit %}
+      <button type="submit" class="btn btn-primary w-25">Edit</button>
+{% endif %}
       </div>
     </form>
     </div>
