@@ -37,14 +37,16 @@
                 <th>Name</th>
                 <th>Breed</th>
                 <th>Species</th>
+                <th>&nbsp;</th>
               </tr>
             </thead>
             <tbody>
             {% for pet in pets %}
               <tr>
-                  <td><a href="/pets/{{pet.id}}">{{pet.name|title}}</a></td>
+                  <td>{{pet.name|title}}</td>
                   <td>{{pet.breed|title}}</td>
                   <td>{{pet.species|title}}</td>
+                  <td><a href="/pets/{{pet.id}}">Edit</a></td>
               </tr>
             {% endfor %}
             </tbody>

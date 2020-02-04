@@ -348,12 +348,12 @@ class PetsRUsTests(unittest.TestCase):
         self.db_session.commit()
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("Max" in response.get_data(as_text=True))
+        self.assertTrue("<td>Max</td>" in response.get_data(as_text=True))
         self.assertTrue(
             "<td>Jack Russell Terrier</td>" in response.get_data(as_text=True)
         )
         self.assertTrue("<td>Canine</td>" in response.get_data(as_text=True))
-        self.assertTrue("Duchess" in response.get_data(as_text=True))
+        self.assertTrue("<td>Duchess</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
 
@@ -397,7 +397,7 @@ class PetsRUsTests(unittest.TestCase):
             data=dict(name="Sykes", species="feline", breed="russian blue"),
             follow_redirects=True,
         )
-        self.assertTrue("Sykes" in response.get_data(as_text=True))
+        self.assertTrue("<td>Sykes</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
         self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
 
