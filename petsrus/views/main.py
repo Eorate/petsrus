@@ -97,6 +97,18 @@ def edit_pets(pet_id):
         return redirect(url_for("index"))
 
 
+# https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
+@app.route("/delete/<int:pet_id>", methods=["POST"])
+@login_required
+def delete_pets(pet_id):
+    if request.method == "POST":
+        pet = db_session.query(Pet).get(pet_id)
+        db_session.delete(pet)
+        db_session.commit()
+        flash("Deleted Pet Details", "success")
+        return redirect(url_for("index"))
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     form = LoginForm(request.form)

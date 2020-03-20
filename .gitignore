@@ -10,3 +10,4 @@ __pycache__/*
 *.env
 *.db
 .coverage
+load_data.py
