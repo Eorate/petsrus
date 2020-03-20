@@ -37,6 +37,8 @@
                 <th>Name</th>
                 <th>Breed</th>
                 <th>Species</th>
+                <th>&nbsp;</th>
+                <th>&nbsp;</th>
               </tr>
             </thead>
             <tbody>
@@ -45,11 +47,52 @@
                   <td>{{pet.name|title}}</td>
                   <td>{{pet.breed|title}}</td>
                   <td>{{pet.species|title}}</td>
+                  <td><a href="/pets/{{pet.id}}" class="btn btn-primary" role="button">Edit</a></td>
+                  <td><button
+                          type="button"
+                          class="btn btn-danger"
+                          data-toggle="modal"
+                          data-target="#myModal{{pet.id}}"
+                          data-keyboard="true"
+                          data-focus="true"
+                      >
+                        Delete
+                      </button>
+                  </td>
+                  <!-- https://stackoverflow.com/questions/22071042/dynamic-bootstrap-modal-within-a-loop -->
+                  <!-- The Modal -->
+                  <div class="modal fade" id="myModal{{pet.id}}">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+
+                        <form class="modal-content" action="{{ url_for('delete_pets', pet_id=pet.id) }}" method=post>
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                          <h4 class="modal-title">Delete Pet</h4>
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            Are you sure you want to delete <b>{{pet.name}}</b>?
+                        </div>
+
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+
+                        </form>
+                      </div>
+                    </div>
+                  </div>
               </tr>
             {% endfor %}
             </tbody>
             </table>
         </div>
+
     {% else %}
         No pets found.
     {% endif %}

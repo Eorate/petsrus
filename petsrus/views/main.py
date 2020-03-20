@@ -70,7 +70,43 @@ def pets():
         flash("Saved Pet", "success")
         return redirect(url_for("index"))
     else:
-        return render_template("pets.html", form=form)
+        return render_template("pets.html", add=True, form=form)
+
+
+# https://stackoverflow.com/questions/47735329/updating-a-row-using-sqlalchemy-orm
+@app.route("/pets/<int:pet_id>", methods=["GET", "POST"])
+@login_required
+def edit_pets(pet_id):
+    pet = db_session.query(Pet).filter_by(id=pet_id).first()
+    form = PetForm(obj=pet)
+
+    if request.method == "GET":
+        return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
+    elif request.method == "POST" and form.validate():
+        pet = db_session.query(Pet).get(pet_id)
+
+        pet.name = (form.name.data,)
+        pet.date_of_birth = (form.date_of_birth.data,)
+        pet.species = (form.species.data,)
+        pet.breed = (form.breed.data,)
+        pet.sex = (form.sex.data,)
+        pet.colour_and_identifying_marks = (form.colour_and_identifying_marks.data,)
+
+        db_session.commit()
+        flash("Updated Pet Details", "success")
+        return redirect(url_for("index"))
+
+
+# https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
+@app.route("/delete/<int:pet_id>", methods=["POST"])
+@login_required
+def delete_pets(pet_id):
+    if request.method == "POST":
+        pet = db_session.query(Pet).get(pet_id)
+        db_session.delete(pet)
+        db_session.commit()
+        flash("Deleted Pet Details", "success")
+        return redirect(url_for("index"))
 
 
 @app.route("/", methods=["GET", "POST"])
