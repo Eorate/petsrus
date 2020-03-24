@@ -80,9 +80,7 @@ def edit_pets(pet_id):
     pet = db_session.query(Pet).filter_by(id=pet_id).first()
     form = PetForm(obj=pet)
 
-    if request.method == "GET":
-        return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
-    elif request.method == "POST" and form.validate():
+    if request.method == "POST" and form.validate():
         pet = db_session.query(Pet).get(pet_id)
 
         pet.name = (form.name.data,)
