@@ -95,6 +95,8 @@ def edit_pets(pet_id):
         db_session.commit()
         flash("Updated Pet Details", "success")
         return redirect(url_for("index"))
+    else:
+        return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
 
 
 # https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
