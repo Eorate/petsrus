@@ -40,6 +40,8 @@ $ source test.env
 $ python3 -m unittest
 # To run specific tests
 $ python3 -m unittest petsrus.tests.test_views
+or
+$ python3 -m unittest petsrus.tests.test_views.PetsRUsTests.test_edit_pets
 # To get coverage
 $ coverage run -m unittest
 $ coverage report
