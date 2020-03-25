@@ -8,6 +8,10 @@ from sqlalchemy.orm import sessionmaker
 from petsrus.petsrus import app, engine, login_manager
 from petsrus.models.models import Base, Pet, User
 from petsrus.forms.forms import LoginForm, PetForm, RegistrationForm
+import sentry_sdk
+
+sentry_sdk.init(dsn="https://8832c638a8844318b961e6678351a9b8@sentry.io/5174780")
+sentry_sdk.capture_exception(Exception("This is an example of an error message."))
 
 
 Base.metadata.bind = engine
@@ -111,6 +115,8 @@ def delete_pets(pet_id):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    division_by_zero = 1 / 0
+
     form = LoginForm(request.form)
     if request.method == "POST" and form.validate():
         user = (
