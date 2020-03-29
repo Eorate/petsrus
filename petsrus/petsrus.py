@@ -1,5 +1,7 @@
 import os
 
+import sentry_sdk
+
 from flask import Flask
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
@@ -18,5 +20,10 @@ app.config.from_object(
 
 # Create an engine that stores data in the env database
 engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+
+# Initialise Sentry SDK
+sentry_sdk.init(
+    dsn=app.config["SENTRY_URI"], environment=app.config["SENTRY_ENVIRONMENT"]
+)
 
 from petsrus.views import main  # noqa

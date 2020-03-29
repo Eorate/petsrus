@@ -18,6 +18,14 @@ class ProductionConfig(Config):
     if not SECRET_KEY:
         raise ValueError("No secret key set for Flask application")
 
+    SENTRY_URI = os.environ.get("SENTRY_URL", default=None)
+    if not SENTRY_URI:
+        raise ValueError("No sentry url provided for Flask application")
+
+    SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", default=None)
+    if not SENTRY_ENVIRONMENT:
+        raise ValueError("No sentry project environment provided for Flask application")
+
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", default=None)
     if not SQLALCHEMY_DATABASE_URI:
         raise ValueError("No database url provided for Flask application")
@@ -31,6 +39,14 @@ class DevelopmentConfig(Config):
     SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
     if not SECRET_KEY:
         raise ValueError("No secret key set for Flask application")
+
+    SENTRY_URI = os.environ.get("SENTRY_URL", default=None)
+    if not SENTRY_URI:
+        raise ValueError("No sentry url provided for Flask application")
+
+    SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", default=None)
+    if not SENTRY_ENVIRONMENT:
+        raise ValueError("No sentry project environment provided for Flask application")
 
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", default=None)
     if not SQLALCHEMY_DATABASE_URI:
@@ -49,6 +65,14 @@ class TestingConfig(Config):
     SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
     if not SECRET_KEY:
         raise ValueError("No secret key set for Flask application")
+
+    SENTRY_URI = os.environ.get("SENTRY_URL", default=None)
+    if not SENTRY_URI:
+        raise ValueError("No sentry url provided for Flask application")
+
+    SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", default=None)
+    if not SENTRY_ENVIRONMENT:
+        raise ValueError("No sentry project environment provided for Flask application")
 
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", default=None)
     if not SQLALCHEMY_DATABASE_URI:
