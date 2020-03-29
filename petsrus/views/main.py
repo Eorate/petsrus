@@ -4,14 +4,11 @@ from flask_login import login_required, login_user, logout_user
 
 from sqlalchemy import exc
 from sqlalchemy.orm import sessionmaker
+from sentry_sdk import capture_exception
 
 from petsrus.petsrus import app, engine, login_manager
 from petsrus.models.models import Base, Pet, User
 from petsrus.forms.forms import LoginForm, PetForm, RegistrationForm
-import sentry_sdk
-
-sentry_sdk.init(dsn="https://8832c638a8844318b961e6678351a9b8@sentry.io/5174780")
-sentry_sdk.capture_exception(Exception("This is an example of an error message."))
 
 
 Base.metadata.bind = engine
@@ -42,6 +39,7 @@ def register():
             db_session.commit()
             flash("Thanks for registering", "info")
         except exc.IntegrityError as error:
+            capture_exception(error)
             db_session.rollback()
             app.logger.error(error.orig)
             flash(
@@ -61,18 +59,21 @@ def register():
 def pets():
     form = PetForm(request.form)
     if request.method == "POST" and form.validate():
-        pet = Pet(
-            name=form.name.data,
-            date_of_birth=form.date_of_birth.data,
-            species=form.species.data,
-            breed=form.breed.data,
-            sex=form.sex.data,
-            colour_and_identifying_marks=form.colour_and_identifying_marks.data,
-        )
-        db_session.add(pet)
-        db_session.commit()
-        flash("Saved Pet", "success")
-        return redirect(url_for("index"))
+        try:
+            pet = Pet(
+                name=form.name.data,
+                date_of_birth=form.date_of_birth.data,
+                species=form.species.data,
+                breed=form.breed.data,
+                sex=form.sex.data,
+                colour_and_identifying_marks=form.colour_and_identifying_marks.data,
+            )
+            db_session.add(pet)
+            db_session.commit()
+            flash("Saved Pet", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            capture_exception(exc)
     else:
         return render_template("pets.html", add=True, form=form)
 
@@ -85,18 +86,21 @@ def edit_pets(pet_id):
     form = PetForm(obj=pet)
 
     if request.method == "POST" and form.validate():
-        pet = db_session.query(Pet).get(pet_id)
+        try:
+            pet = db_session.query(Pet).get(pet_id)
 
-        pet.name = (form.name.data,)
-        pet.date_of_birth = (form.date_of_birth.data,)
-        pet.species = (form.species.data,)
-        pet.breed = (form.breed.data,)
-        pet.sex = (form.sex.data,)
-        pet.colour_and_identifying_marks = (form.colour_and_identifying_marks.data,)
+            pet.name = (form.name.data,)
+            pet.date_of_birth = (form.date_of_birth.data,)
+            pet.species = (form.species.data,)
+            pet.breed = (form.breed.data,)
+            pet.sex = (form.sex.data,)
+            pet.colour_and_identifying_marks = (form.colour_and_identifying_marks.data,)
 
-        db_session.commit()
-        flash("Updated Pet Details", "success")
-        return redirect(url_for("index"))
+            db_session.commit()
+            flash("Updated Pet Details", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            capture_exception(exc)
     else:
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
 
@@ -106,17 +110,18 @@ def edit_pets(pet_id):
 @login_required
 def delete_pets(pet_id):
     if request.method == "POST":
-        pet = db_session.query(Pet).get(pet_id)
-        db_session.delete(pet)
-        db_session.commit()
-        flash("Deleted Pet Details", "success")
-        return redirect(url_for("index"))
+        try:
+            pet = db_session.query(Pet).get(pet_id)
+            db_session.delete(pet)
+            db_session.commit()
+            flash("Deleted Pet Details", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            capture_exception(exc)
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    division_by_zero = 1 / 0
-
     form = LoginForm(request.form)
     if request.method == "POST" and form.validate():
         user = (
