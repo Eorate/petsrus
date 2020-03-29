@@ -6,10 +6,6 @@ from datetime import date
 from petsrus.petsrus import app
 from petsrus.models.models import Pet, User
 from petsrus.views.main import db_session
-import sentry_sdk
-
-sentry_sdk.init(dsn="https://8832c638a8844318b961e6678351a9b8@sentry.io/5174780")
-sentry_sdk.capture_exception(Exception("This is an example of an error message."))
 
 
 class PetsRUsTests(unittest.TestCase):
