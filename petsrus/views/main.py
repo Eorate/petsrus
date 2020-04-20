@@ -105,6 +105,14 @@ def edit_pet(pet_id):
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
 
 
+@app.route("/view_pet/<int:pet_id>", methods=["GET"])
+@login_required
+def view_pet(pet_id):
+    pet = db_session.query(Pet).filter_by(id=pet_id).first()
+    schedules = db_session.query(Schedule).filter_by(pet_id=pet_id).all()
+    return render_template("pet_details.html", pet=pet, schedules=schedules)
+
+
 # https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
 @app.route("/delete/<int:pet_id>", methods=["POST"])
 @login_required
