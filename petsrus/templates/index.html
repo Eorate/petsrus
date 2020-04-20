@@ -44,7 +44,7 @@
             <tbody>
             {% for pet in pets %}
               <tr>
-                  <td>{{pet.name|title}}</td>
+                  <td><a href="/view_pet/{{pet.id}}">{{pet.name|title}}</a></td>
                   <td>{{pet.breed|title}}</td>
                   <td>{{pet.species|title}}</td>
                   <td><a href="/edit_pet/{{pet.id}}" class="btn btn-primary" role="button">Edit</a></td>

@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 
 csrf = CSRFProtect()
 login_manager = LoginManager()
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="/static")
 csrf.init_app(app)
 login_manager.init_app(app)
 

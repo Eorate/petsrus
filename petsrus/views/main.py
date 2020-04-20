@@ -1,3 +1,5 @@
+import traceback
+
 from flask import render_template, redirect, request, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_required, login_user, logout_user
@@ -7,8 +9,16 @@ from sqlalchemy.orm import sessionmaker
 from sentry_sdk import capture_exception
 
 from petsrus.petsrus import app, engine, login_manager
-from petsrus.models.models import Base, Pet, User
-from petsrus.forms.forms import LoginForm, PetForm, RegistrationForm
+from petsrus.models.models import (
+    Base,
+    Pet,
+    Repeat,
+    Repeat_cycle,
+    Schedule,
+    Schedule_type,
+    User,
+)
+from petsrus.forms.forms import LoginForm, PetForm, PetScheduleForm, RegistrationForm
 
 
 Base.metadata.bind = engine
@@ -114,18 +124,56 @@ def view_pet(pet_id):
 
 
 # https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
-@app.route("/delete/<int:pet_id>", methods=["POST"])
+@app.route("/delete_pet/<int:pet_id>", methods=["POST"])
 @login_required
-def delete_pets(pet_id):
+def delete_pet(pet_id):
     if request.method == "POST":
         try:
+            schedule = db_session.query(Schedule).get(pet_id)
             pet = db_session.query(Pet).get(pet_id)
+            if schedule:
+                db_session.delete(schedule)
             db_session.delete(pet)
             db_session.commit()
             flash("Deleted Pet Details", "success")
             return redirect(url_for("index"))
         except Exception as exc:
+            traceback.format_exc()
             capture_exception(exc)
+
+
+@app.route("/add_schedule/<int:pet_id>", methods=["GET", "POST"])
+@login_required
+def add_schedule(pet_id):
+    form = PetScheduleForm(request.form)
+    if request.method == "POST" and form.validate():
+        try:
+            pet = db_session.query(Pet).filter_by(id=pet_id).first()
+            form.schedule_type.choices = [Schedule_type.__values__]
+            form.repeats.choices = [Repeat.__values__]
+            form.repeat_cycle.choices = [Repeat_cycle.__values__]
+            pet_schedule = Schedule(
+                pet_id=pet.id,
+                date_of_next=form.date_of_next.data,
+                repeats=form.repeats.data,
+                repeat_cycle=form.repeat_cycle.data,
+                schedule_type=form.schedule_type.data,
+            )
+            db_session.add(pet_schedule)
+            db_session.commit()
+            flash("Saved Pet Schedule", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            traceback.format_exc()
+            capture_exception(exc)
+    else:
+        return render_template("pet_schedule.html", form=form, pet_id=pet_id)
+
+
+@app.route("/delete_schedule/<int:schedule_id>", methods=["POST"])
+@login_required
+def delete_schedule(schedule_id):
+    pass
 
 
 @app.route("/", methods=["GET", "POST"])
