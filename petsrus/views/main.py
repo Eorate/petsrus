@@ -54,9 +54,9 @@ def register():
         return render_template("register.html", form=form)
 
 
-@app.route("/pets", methods=["GET", "POST"])
+@app.route("/add_pet", methods=["GET", "POST"])
 @login_required
-def pets():
+def add_pet():
     form = PetForm(request.form)
     if request.method == "POST" and form.validate():
         try:
@@ -79,9 +79,9 @@ def pets():
 
 
 # https://stackoverflow.com/questions/47735329/updating-a-row-using-sqlalchemy-orm
-@app.route("/pets/<int:pet_id>", methods=["GET", "POST"])
+@app.route("/edit_pet/<int:pet_id>", methods=["GET", "POST"])
 @login_required
-def edit_pets(pet_id):
+def edit_pet(pet_id):
     pet = db_session.query(Pet).filter_by(id=pet_id).first()
     form = PetForm(obj=pet)
 

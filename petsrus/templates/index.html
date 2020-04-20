@@ -9,7 +9,7 @@
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
          <ul class="navbar-nav">
           <li class="nav-item">
-            <a href="{{ url_for('pets') }}" class="nav-item nav-link">Add Pet</a>
+            <a href="{{ url_for('add_pet') }}" class="nav-item nav-link">Add Pet</a>
           </li>
         </ul>
          <ul class="navbar-nav ml-auto">
@@ -47,7 +47,7 @@
                   <td>{{pet.name|title}}</td>
                   <td>{{pet.breed|title}}</td>
                   <td>{{pet.species|title}}</td>
-                  <td><a href="/pets/{{pet.id}}" class="btn btn-primary" role="button">Edit</a></td>
+                  <td><a href="/edit_pet/{{pet.id}}" class="btn btn-primary" role="button">Edit</a></td>
                   <td><button
                           type="button"
                           class="btn btn-danger"
@@ -65,7 +65,7 @@
                     <div class="modal-dialog modal-lg">
                       <div class="modal-content">
 
-                        <form class="modal-content" action="{{ url_for('delete_pets', pet_id=pet.id) }}" method=post>
+                        <form class="modal-content" action="{{ url_for('delete_pet', pet_id=pet.id) }}" method=post>
                         <!-- Modal Header -->
                         <div class="modal-header">
                           <h4 class="modal-title">Delete Pet</h4>
