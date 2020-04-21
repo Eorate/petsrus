@@ -1,9 +1,47 @@
+from enum import Enum
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import deferred
-from sqlalchemy import Boolean, Column, Integer, String, Date, LargeBinary
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 
 
 Base = declarative_base()
+
+
+class classproperty:
+    def __init__(self, func):
+        self._func = func
+
+    def __get__(self, obj, owner):
+        return self._func(owner)
+
+
+class Repeat_cycle(Enum):
+    MONTHLY = "Monthly"
+    QUARTERLY = "Quarterly"
+    YEARLY = "Yearly"
+
+    @classproperty
+    def __values__(cls):
+        return [(repeat_cycle.name, repeat_cycle.value) for repeat_cycle in cls]
+
+
+class Repeat(Enum):
+    YES = "Yes"
+    NO = "No"
+
+    @classproperty
+    def __values__(cls):
+        return [(repeat.name, repeat.value) for repeat in cls]
+
+
+class Schedule_type(Enum):
+    VACCINE = "Vaccine"
+    DEWORMING = "Deworming"
+    FRONTLINE = "Frontline"
+
+    # http://xion.io/post/code/python-enums-are-ok.html
+    @classproperty
+    def __values__(cls):
+        return [(schedule_type.name, schedule_type.value) for schedule_type in cls]
 
 
 class User(Base):
@@ -44,11 +82,36 @@ class Pet(Base):
     colour_and_identifying_marks = Column(String(200), nullable=False)
 
     def __repr__(self):
-        return "<Pet {}>".format(
+        return (
+            "<Pet name: {}\ndate_of_birth: {}\nspecies: {}\nbreed: {}\n"
+            "sex: {}\ncolour_and_identifying_marks: {}\n>"
+        ).format(
             self.name,
             self.date_of_birth,
             self.species,
             self.breed,
             self.sex,
             self.colour_and_identifying_marks,
+        )
+
+
+class Schedule(Base):
+    __tablename__ = "schedules"
+    id = Column(Integer, primary_key=True)
+    pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
+    date_of_next = Column(Date(), nullable=False)
+    repeats = Column(String(3), nullable=False)
+    repeat_cycle = Column(String(10), nullable=False)
+    schedule_type = Column(String(10), nullable=False)
+
+    def __repr__(self):
+        return (
+            "<Schedule pet_id: {}\ndate_of_next: {}\nrepeats: {}\n"
+            "repeat_cycle: {}\nschedule_type: {}\n>"
+        ).format(
+            self.pet_id,
+            self.date_of_next,
+            self.repeats,
+            self.repeat_cycle,
+            self.schedule_type,
         )

@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}PetsRUs{% endblock %}
+{% block title %} PetsRUs - Pet Details
+{% endblock %}
+
 {% block navbar_content %}
-{% if current_user.is_authenticated %}
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
          <ul class="navbar-nav">
           <li class="nav-item">
-            <a href="{{ url_for('add_pet') }}" class="nav-item nav-link">Add Pet</a>
+            <a href="{{ url_for('index') }}" class="nav-item nav-link">Home</a>
           </li>
         </ul>
          <ul class="navbar-nav ml-auto">
@@ -21,60 +22,83 @@
           </li>
         </ul>
     </div>
-{% endif %}
 {% endblock %}
 
 {% block content %}
+
 {% if current_user.is_authenticated %}
-    <!-- Pet list -->
     <div class="container p-3">
-    <h5>My pets</h5>
-    {% if pets %}
+    <h5>Pet details</h5>
+    <div class="table-responsive-sm">
+        <table class="table table-striped table-bordered table-hover">
+          <tr>
+              <th scope="row" class="header darker">Name</th>
+              <td class="col-8">{{pet.name}}</td>
+          </tr>
+          <tr>
+              <th scope="row" class="header darker">Date of Birth</th>
+              <td>{{pet.date_of_birth}}</td>
+          </tr>
+          <tr>
+              <th scope="row" class="header">Breed</th>
+              <td>{{pet.breed}}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="header">Sex</th>
+            <td>{{pet.sex}}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="header">Colour and Identifying marks</th>
+            <td>{{pet.colour_and_identifying_marks}}</td>
+          </tr>
+        </table>
+    </div>
+    {% if schedules %}
+        <h5> Schedules </h5>
         <div class="table-responsive-sm">
             <table class="table table-striped table-bordered table-hover">
             <thead class="thead-dark">
               <tr>
-                <th>Name</th>
-                <th>Breed</th>
-                <th>Species</th>
-                <th>&nbsp;</th>
+                <th>Schedule_type</th>
+                <th>Date of Next</th>
+                <th>Repeats</th>
+                <th>Repeat Cycle</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
             <tbody>
-            {% for pet in pets %}
+            {% for schedule in schedules %}
               <tr>
-                  <td><a href="/view_pet/{{pet.id}}">{{pet.name|title}}</a></td>
-                  <td>{{pet.breed|title}}</td>
-                  <td>{{pet.species|title}}</td>
-                  <td><a href="/edit_pet/{{pet.id}}" class="btn btn-primary" role="button">Edit</a></td>
+                  <td>{{schedule.schedule_type|title}}</a></td>
+                  <td>{{schedule.date_of_next}}</td>
+                  <td>{{schedule.repeats}}</td>
+                  <td>{{schedule.repeat_cycle}}</td>
                   <td><button
                           type="button"
                           class="btn btn-danger"
                           data-toggle="modal"
-                          data-target="#myModal{{pet.id}}"
+                          data-target="#myModal{{schedule.id}}"
                           data-keyboard="true"
                           data-focus="true"
                       >
                         Delete
                       </button>
                   </td>
-                  <!-- https://stackoverflow.com/questions/22071042/dynamic-bootstrap-modal-within-a-loop -->
                   <!-- The Modal -->
-                  <div class="modal fade" id="myModal{{pet.id}}">
+                  <div class="modal fade" id="myModal{{schedule.id}}">
                     <div class="modal-dialog modal-lg">
                       <div class="modal-content">
 
-                        <form class="modal-content" action="{{ url_for('delete_pet', pet_id=pet.id) }}" method=post>
+                        <form class="modal-content" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}" method=post>
                         <!-- Modal Header -->
                         <div class="modal-header">
-                          <h4 class="modal-title">Delete Pet</h4>
+                          <h4 class="modal-title">Delete Schedule</h4>
                           <button type="button" class="close" data-dismiss="modal">&times;</button>
                         </div>
 
                         <!-- Modal body -->
                         <div class="modal-body">
-                            Are you sure you want to delete <b>{{pet.name}}</b>?
+                            Are you sure you want to delete <b>{{schedule.schedule_type}}</b> for <b>{{schedule.date_of_next}}</b>?
                         </div>
 
                         <!-- Modal footer -->
@@ -92,32 +116,11 @@
             </tbody>
             </table>
         </div>
-
     {% else %}
-        No pets found.
+        <p> No schedules recorded yet. <a href="/add_schedule/{{pet.id}}">Add Schedule</a></p>
     {% endif %}
     </div>
 
-{% else %}
-    <!-- Login form -->
-    {% from "_formhelpers.html" import render_field %}
-    <div class="container p-3 my-3 w-75 border rounded bg-light">
-    <h1 class="text-center">Login</h1>
-    <form method=post action="{{ url_for('index') }}">
-      {{ form.csrf_token }}
-      <div class="form-group">
-        {{ render_field(form.username, class='form-control', placeholder="Enter username", required=False) }}
-      </div>
-      <div class="form-group">
-        {{ render_field(form.password, class='form-control', placeholder="Enter password", required=False) }}
-      </div>
-      <div class="text-center">
-      <button type="submit" class="btn btn-primary w-25">Login</button>
-      </div>
-    </form>
-    </div>
-    <div class="container w-75">
-        Don't have an account? <a href="{{ url_for('register') }}">Register</a>
-    </div>
 {% endif %}
-{% endblock%}
+
+{% endblock %}

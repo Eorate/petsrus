@@ -1,7 +1,23 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import (
+    IntegerField,
+    PasswordField,
+    RadioField,
+    SelectField,
+    StringField,
+    SubmitField,
+)
 from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired, EqualTo, Email, Length
+from wtforms.validators import (
+    DataRequired,
+    EqualTo,
+    Email,
+    InputRequired,
+    Length,
+    Optional,
+)
+
+from petsrus.models.models import Repeat, Repeat_cycle, Schedule_type
 
 
 class RegistrationForm(FlaskForm):
@@ -95,4 +111,23 @@ class PetForm(FlaskForm):
         ],
     )
     colour_and_identifying_marks = StringField("Colour and identifying marks:")
+    save = SubmitField("Save")
+
+
+class PetScheduleForm(FlaskForm):
+    pet_id = IntegerField("Pet id")
+    date_of_next = DateField(
+        "Date of Next:",
+        format="%Y-%m-%d",
+        validators=[DataRequired(message="Please enter the Date of Next (YYYY-MM-DD)")],
+    )
+    repeats = RadioField(
+        "Repeats:",
+        choices=Repeat.__values__,
+        validators=[InputRequired(message="Please select either Yes or No")],
+    )
+    repeat_cycle = RadioField(
+        "Repeat Cycle:", choices=Repeat_cycle.__values__, validators=[Optional()]
+    )
+    schedule_type = SelectField(choices=Schedule_type.__values__)
     save = SubmitField("Save")
