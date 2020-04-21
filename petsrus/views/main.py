@@ -83,6 +83,7 @@ def add_pet():
             flash("Saved Pet", "success")
             return redirect(url_for("index"))
         except Exception as exc:
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
     else:
         return render_template("pets.html", add=True, form=form)
@@ -110,6 +111,7 @@ def edit_pet(pet_id):
             flash("Updated Pet Details", "success")
             return redirect(url_for("index"))
         except Exception as exc:
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
     else:
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
@@ -138,7 +140,7 @@ def delete_pet(pet_id):
             flash("Deleted Pet Details", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            traceback.format_exc()
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
 
 
@@ -164,7 +166,7 @@ def add_schedule(pet_id):
             flash("Saved Pet Schedule", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            traceback.format_exc()
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
     else:
         return render_template("pet_schedule.html", form=form, pet_id=pet_id)
@@ -173,7 +175,16 @@ def add_schedule(pet_id):
 @app.route("/delete_schedule/<int:schedule_id>", methods=["POST"])
 @login_required
 def delete_schedule(schedule_id):
-    pass
+    try:
+        if request.method == "POST":
+            schedule = db_session.query(Schedule).get(schedule_id)
+            db_session.delete(schedule)
+            db_session.commit()
+            flash("Deleted Pet Schedule", "success")
+            return redirect(url_for("index"))
+    except Exception as exc:
+        app.logger.error(traceback.format_exc)
+        capture_exception(exc)
 
 
 @app.route("/", methods=["GET", "POST"])
