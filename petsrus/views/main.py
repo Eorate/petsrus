@@ -1,13 +1,24 @@
+import traceback
+
 from flask import render_template, redirect, request, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_required, login_user, logout_user
 
 from sqlalchemy import exc
 from sqlalchemy.orm import sessionmaker
+from sentry_sdk import capture_exception
 
 from petsrus.petsrus import app, engine, login_manager
-from petsrus.models.models import Base, Pet, User
-from petsrus.forms.forms import LoginForm, PetForm, RegistrationForm
+from petsrus.models.models import (
+    Base,
+    Pet,
+    Repeat,
+    Repeat_cycle,
+    Schedule,
+    Schedule_type,
+    User,
+)
+from petsrus.forms.forms import LoginForm, PetForm, PetScheduleForm, RegistrationForm
 
 
 Base.metadata.bind = engine
@@ -38,6 +49,7 @@ def register():
             db_session.commit()
             flash("Thanks for registering", "info")
         except exc.IntegrityError as error:
+            capture_exception(error)
             db_session.rollback()
             app.logger.error(error.orig)
             flash(
@@ -52,61 +64,116 @@ def register():
         return render_template("register.html", form=form)
 
 
-@app.route("/pets", methods=["GET", "POST"])
+@app.route("/add_pet", methods=["GET", "POST"])
 @login_required
-def pets():
+def add_pet():
     form = PetForm(request.form)
     if request.method == "POST" and form.validate():
-        pet = Pet(
-            name=form.name.data,
-            date_of_birth=form.date_of_birth.data,
-            species=form.species.data,
-            breed=form.breed.data,
-            sex=form.sex.data,
-            colour_and_identifying_marks=form.colour_and_identifying_marks.data,
-        )
-        db_session.add(pet)
-        db_session.commit()
-        flash("Saved Pet", "success")
-        return redirect(url_for("index"))
+        try:
+            pet = Pet(
+                name=form.name.data,
+                date_of_birth=form.date_of_birth.data,
+                species=form.species.data,
+                breed=form.breed.data,
+                sex=form.sex.data,
+                colour_and_identifying_marks=form.colour_and_identifying_marks.data,
+            )
+            db_session.add(pet)
+            db_session.commit()
+            flash("Saved Pet", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            capture_exception(exc)
     else:
         return render_template("pets.html", add=True, form=form)
 
 
 # https://stackoverflow.com/questions/47735329/updating-a-row-using-sqlalchemy-orm
-@app.route("/pets/<int:pet_id>", methods=["GET", "POST"])
+@app.route("/edit_pet/<int:pet_id>", methods=["GET", "POST"])
 @login_required
-def edit_pets(pet_id):
+def edit_pet(pet_id):
     pet = db_session.query(Pet).filter_by(id=pet_id).first()
     form = PetForm(obj=pet)
 
-    if request.method == "GET":
+    if request.method == "POST" and form.validate():
+        try:
+            pet = db_session.query(Pet).get(pet_id)
+
+            pet.name = (form.name.data,)
+            pet.date_of_birth = (form.date_of_birth.data,)
+            pet.species = (form.species.data,)
+            pet.breed = (form.breed.data,)
+            pet.sex = (form.sex.data,)
+            pet.colour_and_identifying_marks = (form.colour_and_identifying_marks.data,)
+
+            db_session.commit()
+            flash("Updated Pet Details", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            capture_exception(exc)
+    else:
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
-    elif request.method == "POST" and form.validate():
-        pet = db_session.query(Pet).get(pet_id)
 
-        pet.name = (form.name.data,)
-        pet.date_of_birth = (form.date_of_birth.data,)
-        pet.species = (form.species.data,)
-        pet.breed = (form.breed.data,)
-        pet.sex = (form.sex.data,)
-        pet.colour_and_identifying_marks = (form.colour_and_identifying_marks.data,)
 
-        db_session.commit()
-        flash("Updated Pet Details", "success")
-        return redirect(url_for("index"))
+@app.route("/view_pet/<int:pet_id>", methods=["GET"])
+@login_required
+def view_pet(pet_id):
+    pet = db_session.query(Pet).filter_by(id=pet_id).first()
+    schedules = db_session.query(Schedule).filter_by(pet_id=pet_id).all()
+    return render_template("pet_details.html", pet=pet, schedules=schedules)
 
 
 # https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
-@app.route("/delete/<int:pet_id>", methods=["POST"])
+@app.route("/delete_pet/<int:pet_id>", methods=["POST"])
 @login_required
-def delete_pets(pet_id):
+def delete_pet(pet_id):
     if request.method == "POST":
-        pet = db_session.query(Pet).get(pet_id)
-        db_session.delete(pet)
-        db_session.commit()
-        flash("Deleted Pet Details", "success")
-        return redirect(url_for("index"))
+        try:
+            schedule = db_session.query(Schedule).get(pet_id)
+            pet = db_session.query(Pet).get(pet_id)
+            if schedule:
+                db_session.delete(schedule)
+            db_session.delete(pet)
+            db_session.commit()
+            flash("Deleted Pet Details", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            traceback.format_exc()
+            capture_exception(exc)
+
+
+@app.route("/add_schedule/<int:pet_id>", methods=["GET", "POST"])
+@login_required
+def add_schedule(pet_id):
+    form = PetScheduleForm(request.form)
+    if request.method == "POST" and form.validate():
+        try:
+            pet = db_session.query(Pet).filter_by(id=pet_id).first()
+            form.schedule_type.choices = [Schedule_type.__values__]
+            form.repeats.choices = [Repeat.__values__]
+            form.repeat_cycle.choices = [Repeat_cycle.__values__]
+            pet_schedule = Schedule(
+                pet_id=pet.id,
+                date_of_next=form.date_of_next.data,
+                repeats=form.repeats.data,
+                repeat_cycle=form.repeat_cycle.data,
+                schedule_type=form.schedule_type.data,
+            )
+            db_session.add(pet_schedule)
+            db_session.commit()
+            flash("Saved Pet Schedule", "success")
+            return redirect(url_for("index"))
+        except Exception as exc:
+            traceback.format_exc()
+            capture_exception(exc)
+    else:
+        return render_template("pet_schedule.html", form=form, pet_id=pet_id)
+
+
+@app.route("/delete_schedule/<int:schedule_id>", methods=["POST"])
+@login_required
+def delete_schedule(schedule_id):
+    pass
 
 
 @app.route("/", methods=["GET", "POST"])

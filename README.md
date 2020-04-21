@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/Eorate/petsrus/tree/master.svg?style=shield)](https://circleci.com/gh/Eorate/petsrus/tree/master)
+[![CircleCI](https://circleci.com/gh/Eorate/petsrus.svg?style=shield)](https://circleci.com/gh/Eorate/petsrus)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f65b3b686e29acc8e177/maintainability)](https://codeclimate.com/github/Eorate/petsrus/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f65b3b686e29acc8e177/test_coverage)](https://codeclimate.com/github/Eorate/petsrus/test_coverage)
 
@@ -40,6 +40,8 @@ $ source test.env
 $ python3 -m unittest
 # To run specific tests
 $ python3 -m unittest petsrus.tests.test_views
+or
+$ python3 -m unittest petsrus.tests.test_views.PetsRUsTests.test_edit_pets
 # To get coverage
 $ coverage run -m unittest
 $ coverage report
