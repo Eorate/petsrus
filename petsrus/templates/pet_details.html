@@ -33,7 +33,7 @@
         <table class="table table-striped table-bordered table-hover">
           <tr>
               <th scope="row" class="header darker">Name</th>
-              <td class="col-8">{{pet.name}}</td>
+              <td class="col-8">{{pet.name|title}}</td>
           </tr>
           <tr>
               <th scope="row" class="header darker">Date of Birth</th>
@@ -41,11 +41,11 @@
           </tr>
           <tr>
               <th scope="row" class="header">Breed</th>
-              <td>{{pet.breed}}</td>
+              <td>{{pet.breed|title}}</td>
           </tr>
           <tr>
             <th scope="row" class="header">Sex</th>
-            <td>{{pet.sex}}</td>
+            <td>{{pet.sex|title}}</td>
           </tr>
           <tr>
             <th scope="row" class="header">Colour and Identifying marks</th>
