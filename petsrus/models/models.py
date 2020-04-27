@@ -83,9 +83,10 @@ class Pet(Base):
 
     def __repr__(self):
         return (
-            "<Pet name: {}\ndate_of_birth: {}\nspecies: {}\nbreed: {}\n"
+            "<Pet\nid: {}\nname: {}\ndate_of_birth: {}\nspecies: {}\nbreed: {}\n"
             "sex: {}\ncolour_and_identifying_marks: {}\n>"
         ).format(
+            self.id,
             self.name,
             self.date_of_birth,
             self.species,
@@ -106,9 +107,10 @@ class Schedule(Base):
 
     def __repr__(self):
         return (
-            "<Schedule pet_id: {}\ndate_of_next: {}\nrepeats: {}\n"
+            "<Schedule\nid: {}\npet_id: {}\ndate_of_next: {}\nrepeats: {}\n"
             "repeat_cycle: {}\nschedule_type: {}\n>"
         ).format(
+            self.id,
             self.pet_id,
             self.date_of_next,
             self.repeats,

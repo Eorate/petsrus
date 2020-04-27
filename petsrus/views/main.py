@@ -1,14 +1,14 @@
 import traceback
+from datetime import date
 
-from flask import render_template, redirect, request, url_for, flash
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
-
-from sqlalchemy import exc
-from sqlalchemy.orm import sessionmaker
 from sentry_sdk import capture_exception
+from sqlalchemy import desc, exc
+from sqlalchemy.orm import sessionmaker
+from werkzeug.security import check_password_hash, generate_password_hash
 
-from petsrus.petsrus import app, engine, login_manager
+from petsrus.forms.forms import LoginForm, PetForm, PetScheduleForm, RegistrationForm
 from petsrus.models.models import (
     Base,
     Pet,
@@ -18,8 +18,7 @@ from petsrus.models.models import (
     Schedule_type,
     User,
 )
-from petsrus.forms.forms import LoginForm, PetForm, PetScheduleForm, RegistrationForm
-
+from petsrus.petsrus import app, engine, login_manager
 
 Base.metadata.bind = engine
 Base.metadata.create_all()
@@ -121,8 +120,21 @@ def edit_pet(pet_id):
 @login_required
 def view_pet(pet_id):
     pet = db_session.query(Pet).filter_by(id=pet_id).first()
-    schedules = db_session.query(Schedule).filter_by(pet_id=pet_id).all()
-    return render_template("pet_details.html", pet=pet, schedules=schedules)
+    due = (
+        db_session.query(Schedule)
+        .filter(Schedule.pet_id == pet_id, Schedule.date_of_next >= date.today())
+        .order_by(desc(Schedule.date_of_next))
+        .all()
+    )
+    past = (
+        db_session.query(Schedule)
+        .filter(Schedule.pet_id == pet_id, Schedule.date_of_next < date.today())
+        .order_by(desc(Schedule.date_of_next))
+        .all()
+    )
+    return render_template(
+        "pet_details.html", pet=pet, due_schedules=due, past_schedules=past
+    )
 
 
 # https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
