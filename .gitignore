@@ -11,3 +11,4 @@ __pycache__/*
 *.db
 .coverage
 load_data.py
+.envrc

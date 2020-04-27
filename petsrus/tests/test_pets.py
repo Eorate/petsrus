@@ -1,12 +1,11 @@
 # coding=utf-8
 import unittest
+from datetime import date, timedelta
 
-from datetime import date
-
-from petsrus.petsrus import app
 from petsrus.models.models import Pet, Schedule, User
+from petsrus.petsrus import app
+from petsrus.tests.helper import add_pet_helper, login_user_helper, register_user_helper
 from petsrus.views.main import db_session
-from petsrus.tests.helper import add_pet_helper, register_user_helper, login_user_helper
 
 
 class TestCasePets(unittest.TestCase):
@@ -500,11 +499,11 @@ class TestCasePets(unittest.TestCase):
         response = self.client.get("/view_pet/{}".format(hayate.id))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(">Hayate</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>2013-08-10</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>Collie</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>M</td>" in response.get_data(as_text=True))
+        self.assertTrue(">2013-08-10</td>" in response.get_data(as_text=True))
+        self.assertTrue(">Collie</td>" in response.get_data(as_text=True))
+        self.assertTrue(">M</td>" in response.get_data(as_text=True))
         self.assertTrue(
-            "<td>black with brown patches</td>" in response.get_data(as_text=True)
+            ">black with brown patches</td>" in response.get_data(as_text=True)
         )
 
         response = self.client.get("/logout")
@@ -565,6 +564,56 @@ class TestCasePets(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, self.db_session.query(Schedule).count())
+
+    def test_view_pet_schedules(self):
+        """Test GET /view_pet with due and past schedules"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = {
+            "name": "Kira",
+            "date": date(2001, 9, 14),
+            "species": "canine",
+            "breed": "corgi",
+            "sex": "m",
+            "description": "white puppy with black ears",
+        }
+        kira = add_pet_helper(self.db_session, pet)
+
+        tomorrow = date.today() + timedelta(days=1)
+        yesterday = date.today() + timedelta(days=-1)
+        due_schedule = Schedule(
+            pet_id=kira.id,
+            date_of_next=tomorrow,
+            repeats="YES",
+            repeat_cycle="QUARTERLY",
+            schedule_type="FRONTLINE",
+        )
+        self.db_session.add(due_schedule)
+        past_schedule = Schedule(
+            pet_id=kira.id,
+            date_of_next=yesterday,
+            repeats="YES",
+            repeat_cycle="YEARLY",
+            schedule_type="VACCINE",
+        )
+        self.db_session.add(past_schedule)
+        self.db_session.commit()
+        self.assertEqual(2, self.db_session.query(Schedule).count())
+
+        response = self.client.get("/view_pet/{}".format(kira.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(">Kira</td>" in response.get_data(as_text=True))
+        self.assertTrue("<h5>Schedules</h5>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Frontline</td>" in response.get_data(as_text=True))
+        self.assertTrue(
+            "<td>{}</td>".format(tomorrow) in response.get_data(as_text=True)
+        )
+        self.assertTrue("<h5>History</h5>" in response.get_data(as_text=True))
+        self.assertTrue("<td>Vaccine</td>" in response.get_data(as_text=True))
+        self.assertTrue(
+            "<td>{}</td>".format(yesterday) in response.get_data(as_text=True)
+        )
 
     def test_delete_pet_schedule(self):
         """Test POST /delete_schedule"""
