@@ -32,16 +32,15 @@ class TestCasePets(unittest.TestCase):
         self.assertTrue("No pets found." in response.get_data(as_text=True))
 
         # Add pet
-        duke = Pet(
-            name="duchess",
-            date_of_birth=date(2001, 1, 2),
-            species="feline",
-            breed="russian blue",
-            sex="m",
-            colour_and_identifying_marks="b",
-        )
-        self.db_session.add(duke)
-        self.db_session.commit()
+        pet = {
+            "name": "duchess",
+            "date": date(2001, 1, 2),
+            "species": "feline",
+            "breed": "russian blue",
+            "sex": "m",
+            "description": "b",
+        }
+        duke = add_pet_helper(self.db_session, pet)
 
         # Edit Pet
         response = self.client.get("/edit_pet/{}".format(duke.id))
@@ -173,6 +172,26 @@ class TestCasePets(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             "Please enter a Date of Birth (YYYY-MM-DD)"
+            in response.get_data(as_text=True)
+        )
+        self.assertEqual(0, self.db_session.query(Pet).count())
+
+        response = self.client.post(
+            "/add_pet",
+            data=dict(
+                name="Ace",
+                # Date in the future
+                date_of_birth=date.today() + timedelta(days=2),
+                species="canine",
+                breed="German Shepherd",
+                sex="M",
+                color_and_identifying_marks="Black with brown patches",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Please enter a date before {}".format(date.today())
             in response.get_data(as_text=True)
         )
         self.assertEqual(0, self.db_session.query(Pet).count())
@@ -414,7 +433,7 @@ class TestCasePets(unittest.TestCase):
 
         response = self.client.post(
             "/edit_pet/{}".format(duke.id),
-            data=dict(name="Sykes", species="canine", breed="russian grey"),
+            data=dict(name="Sykes", species="canine", breed="russian grey", sex="m"),
             follow_redirects=True,
         )
         self.assertTrue(">Sykes</a>" in response.get_data(as_text=True))
@@ -509,8 +528,63 @@ class TestCasePets(unittest.TestCase):
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
 
+    def test_validate_pet_schedule_details(self):
+        """Test valid details on creating a schedule /add_schedule/<int:pet_id>"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        # Add pet
+        pet = {
+            "name": "NoCry",
+            "date": date(2001, 1, 2),
+            "species": "feline",
+            "breed": "domestic cat",
+            "sex": "m",
+            "description": "black",
+        }
+        marley = add_pet_helper(self.db_session, pet)
+
+        # Add Pet Schedule - No data entered
+        response = self.client.post(
+            "/add_schedule/{}".format(marley.id),
+            data=dict(
+                schedule_type="VACCINE", date_of_next="", repeats="", repeat_cycle="",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Please enter the Date (YYYY-MM-DD)" in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "Please select either Yes or No" in response.get_data(as_text=True)
+        )
+
+        # Add schedule, with a date in the past
+        response = self.client.post(
+            "/add_schedule/{}".format(marley.id),
+            data=dict(
+                schedule_type="VACCINE",
+                date_of_next="2001-02-01",
+                repeats="",
+                repeat_cycle="",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Please enter a date greater than today {}".format(date.today())
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "Please select either Yes or No" in response.get_data(as_text=True)
+        )
+
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 302)
+
     def test_add_new_pet_schedule(self):
-        """Test POST /add_schedule"""
+        """Test POST /add_schedule/<int:pet_id>"""
         register_user_helper(self.client)
         login_user_helper(self.client)
 
@@ -528,7 +602,7 @@ class TestCasePets(unittest.TestCase):
             "/add_schedule/{}".format(kira.id),
             data=dict(
                 schedule_type="VACCINE",
-                date_of_next="2019-02-15",
+                date_of_next=date.today() + timedelta(days=1),
                 repeats="YES",
                 repeat_cycle="YEARLY",
             ),
@@ -538,7 +612,7 @@ class TestCasePets(unittest.TestCase):
         self.assertEqual(1, self.db_session.query(Schedule).count())
 
     def test_add_new_pet_schedule_no_repeat_cycle(self):
-        """Test POST /add_schedule without a repeat_cycle"""
+        """Test POST /add_schedule/<int:pet_id> without a repeat_cycle"""
         register_user_helper(self.client)
         login_user_helper(self.client)
 
@@ -556,7 +630,7 @@ class TestCasePets(unittest.TestCase):
             "/add_schedule/{}".format(nemo.id),
             data=dict(
                 schedule_type="FRONTLINE",
-                date_of_next="2019-02-15",
+                date_of_next=date.today() + timedelta(days=2),
                 repeats="NO",
                 repeat_cycle="",
             ),
