@@ -1,3 +1,5 @@
+from datetime import date
+
 from flask_wtf import FlaskForm
 from wtforms import (
     IntegerField,
@@ -10,13 +12,14 @@ from wtforms import (
 from wtforms.fields.html5 import DateField
 from wtforms.validators import (
     DataRequired,
-    EqualTo,
     Email,
+    EqualTo,
     InputRequired,
     Length,
     Optional,
 )
 
+from petsrus.forms.validators import FutureDate, PastDate
 from petsrus.models.models import Repeat, Repeat_cycle, Schedule_type
 
 
@@ -24,7 +27,7 @@ class RegistrationForm(FlaskForm):
     username = StringField(
         "Username:",
         validators=[
-            DataRequired(message="Please enter your username"),
+            InputRequired(message="Please enter your username"),
             Length(
                 min=4,
                 max=25,
@@ -35,7 +38,7 @@ class RegistrationForm(FlaskForm):
     password = PasswordField(
         "Password:",
         validators=[
-            DataRequired(message="Please enter your password"),
+            InputRequired(message="Please enter your password"),
             EqualTo("confirm_password", message="Passwords must match"),
             Length(min=8, message="Password should be aleast 8 characters in length"),
         ],
@@ -44,7 +47,7 @@ class RegistrationForm(FlaskForm):
     email_address = StringField(
         "Email address:",
         validators=[
-            DataRequired(message="Please enter your email address"),
+            InputRequired(message="Please enter your email address"),
             Email(message="Please enter a valid email address"),
             Length(min=6, max=35),
         ],
@@ -56,10 +59,10 @@ class RegistrationForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     username = StringField(
-        "Username:", validators=[DataRequired(message="Please enter your username")]
+        "Username:", validators=[InputRequired(message="Please enter your username")]
     )
     password = PasswordField(
-        "Password:", validators=[DataRequired(message="Please enter your password")]
+        "Password:", validators=[InputRequired(message="Please enter your password")]
     )
     login = SubmitField("Login")
 
@@ -68,7 +71,7 @@ class PetForm(FlaskForm):
     name = StringField(
         "Name:",
         validators=[
-            DataRequired(message="Please enter a name"),
+            InputRequired(message="Please enter a name"),
             Length(
                 min=2,
                 max=24,
@@ -79,12 +82,15 @@ class PetForm(FlaskForm):
     date_of_birth = DateField(
         "Date of Birth:",
         format="%Y-%m-%d",
-        validators=[DataRequired(message="Please enter a Date of Birth (YYYY-MM-DD)")],
+        validators=[
+            DataRequired(message="Please enter a Date of Birth (YYYY-MM-DD)"),
+            PastDate(message="Please enter a date before {}".format(date.today())),
+        ],
     )
     species = StringField(
         "Species:",
         validators=[
-            DataRequired(message="Please provide species details"),
+            InputRequired(message="Please provide species details"),
             Length(
                 min=4,
                 max=10,
@@ -95,7 +101,7 @@ class PetForm(FlaskForm):
     breed = StringField(
         "Breed:",
         validators=[
-            DataRequired(message="Please provide breed details"),
+            InputRequired(message="Please provide breed details"),
             Length(
                 min=5,
                 max=25,
@@ -106,7 +112,7 @@ class PetForm(FlaskForm):
     sex = StringField(
         "Sex:",
         validators=[
-            DataRequired(message="Please provide pet sex details"),
+            InputRequired(message="Please provide pet sex details"),
             Length(min=1, max=1, message="Enter M or F for sex"),
         ],
     )
@@ -119,7 +125,12 @@ class PetScheduleForm(FlaskForm):
     date_of_next = DateField(
         "Date of Next:",
         format="%Y-%m-%d",
-        validators=[DataRequired(message="Please enter the Date of Next (YYYY-MM-DD)")],
+        validators=[
+            InputRequired(message="Please enter the Date (YYYY-MM-DD)"),
+            FutureDate(
+                message="Please enter a date greater than today {}".format(date.today())
+            ),
+        ],
     )
     repeats = RadioField(
         "Repeats:",
