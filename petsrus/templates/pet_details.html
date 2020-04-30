@@ -73,7 +73,11 @@
                   <td>{{schedule.schedule_type|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
-                  <td>{{schedule.repeat_cycle}}</td>
+                  {% if schedule.repeat_cycle %}
+                    <td>{{schedule.repeat_cycle}}</td>
+                  {% else %}
+                    <td>&mdash;</td>
+                  {% endif %}
                   <td><button
                           type="button"
                           class="btn btn-danger"
@@ -137,7 +141,11 @@
                   <td>{{schedule.schedule_type|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
-                  <td>{{schedule.repeat_cycle}}</td>
+                  {% if schedule.repeat_cycle %}
+                    <td>{{schedule.repeat_cycle}}</td>
+                  {% else %}
+                    <td>&mdash;</td>
+                  {% endif %}
                   <td>&nbsp;</td>
               </tr>
             {% endfor %}
