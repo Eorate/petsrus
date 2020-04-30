@@ -20,6 +20,10 @@ class TestCasePets(unittest.TestCase):
         self.client = app.test_client()
         self.client.testing = True
         self.db_session = db_session
+        self.db_session.query(Schedule).delete()
+        self.db_session.query(Pet).delete()
+        self.db_session.query(User).delete()
+        self.db_session.commit()
 
     def tearDown(self):
         self.db_session.query(Schedule).delete()
@@ -590,7 +594,7 @@ class TestCasePets(unittest.TestCase):
                 schedule_type="FRONTLINE",
                 date_of_next=date.today() + timedelta(days=2),
                 repeats="NO",
-                repeat_cycle="",
+                repeat_cycle=None,
             ),
             follow_redirects=True,
         )
