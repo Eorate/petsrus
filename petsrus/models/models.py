@@ -102,7 +102,7 @@ class Schedule(Base):
     pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
     date_of_next = Column(Date(), nullable=False)
     repeats = Column(String(3), nullable=False)
-    repeat_cycle = Column(String(10), nullable=True)
+    repeat_cycle = Column(String(10), nullable=False)
     schedule_type = Column(String(10), nullable=False)
 
     def __repr__(self):

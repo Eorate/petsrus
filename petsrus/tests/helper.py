@@ -65,7 +65,7 @@ def random_schedule(past=False):
         if repeat_cycle == "YEARLY":
             schedule_type = "VACCINE"
     else:
-        repeat_cycle = None
+        repeat_cycle = ""
     # We want some historical schedules
     if past:
         date_of_next = fake.date_this_year(before_today=True, after_today=False)
