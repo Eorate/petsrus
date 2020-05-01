@@ -1,12 +1,18 @@
 # coding=utf-8
 import unittest
+from datetime import date, timedelta
 
-from datetime import date
-
-from petsrus.petsrus import app
 from petsrus.models.models import Pet, Schedule, User
+from petsrus.petsrus import app
+from petsrus.tests.helper import (
+    add_pet_helper,
+    add_pet_schedule_helper,
+    login_user_helper,
+    random_pet,
+    random_schedule,
+    register_user_helper,
+)
 from petsrus.views.main import db_session
-from petsrus.tests.helper import register_user_helper, login_user_helper
 
 
 class TestCasePets(unittest.TestCase):
@@ -33,26 +39,23 @@ class TestCasePets(unittest.TestCase):
         self.assertTrue("No pets found." in response.get_data(as_text=True))
 
         # Add pet
-        duke = Pet(
-            name="duchess",
-            date_of_birth=date(2001, 1, 2),
-            species="feline",
-            breed="russian blue",
-            sex="m",
-            colour_and_identifying_marks="b",
-        )
-        self.db_session.add(duke)
-        self.db_session.commit()
+        pet = add_pet_helper(self.db_session, random_pet())
 
         # Edit Pet
-        response = self.client.get("/edit_pet/{}".format(duke.id))
+        response = self.client.get("/edit_pet/{}".format(pet.id))
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('value="duchess"' in response.get_data(as_text=True))
-        self.assertTrue('value="feline"' in response.get_data(as_text=True))
-        self.assertTrue('value="russian blue"' in response.get_data(as_text=True))
+        self.assertTrue(
+            'value="{}"'.format(pet.name) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            'value="{}"'.format(pet.species) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            'value="{}"'.format(pet.breed) in response.get_data(as_text=True)
+        )
 
         response = self.client.post(
-            "/edit_pet/{}".format(duke.id),
+            "/edit_pet/{}".format(pet.id),
             data=dict(name="S", species="c", breed="r"),
             follow_redirects=True,
         )
@@ -71,9 +74,6 @@ class TestCasePets(unittest.TestCase):
 
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
-
-        self.db_session.query(Pet).delete()
-        self.db_session.commit()
 
     def test_pets_validate_name(self):
         """Test pet name validation"""
@@ -174,6 +174,26 @@ class TestCasePets(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             "Please enter a Date of Birth (YYYY-MM-DD)"
+            in response.get_data(as_text=True)
+        )
+        self.assertEqual(0, self.db_session.query(Pet).count())
+
+        response = self.client.post(
+            "/add_pet",
+            data=dict(
+                name="Ace",
+                # Date in the future
+                date_of_birth=date.today() + timedelta(days=2),
+                species="canine",
+                breed="German Shepherd",
+                sex="M",
+                color_and_identifying_marks="Black with brown patches",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Please enter a date before {}".format(date.today())
             in response.get_data(as_text=True)
         )
         self.assertEqual(0, self.db_session.query(Pet).count())
@@ -349,75 +369,65 @@ class TestCasePets(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue("No pets found." in response.get_data(as_text=True))
 
-        # Add pets and test
-        maxx = Pet(
-            name="maxx",
-            date_of_birth=date(2001, 1, 1),
-            species="canine",
-            breed="jack russell terrier",
-            sex="m",
-            colour_and_identifying_marks="White with tan markings",
-        )
-        self.db_session.add(maxx)
-        duke = Pet(
-            name="duchess",
-            date_of_birth=date(2001, 1, 2),
-            species="feline",
-            breed="russian blue",
-            sex="m",
-            colour_and_identifying_marks="Black",
-        )
-        self.db_session.add(duke)
-        self.db_session.commit()
+        # Add some pets
+        first_pet = add_pet_helper(self.db_session, random_pet())
+        second_pet = add_pet_helper(self.db_session, random_pet())
+
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(">Maxx</a>" in response.get_data(as_text=True))
         self.assertTrue(
-            "<td>Jack Russell Terrier</td>" in response.get_data(as_text=True)
+            ">{}</a>".format(first_pet.name) in response.get_data(as_text=True)
         )
-        self.assertTrue("<td>Canine</td>" in response.get_data(as_text=True))
-        self.assertTrue(">Duchess</a>" in response.get_data(as_text=True))
-        self.assertTrue("<td>Feline</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>Russian Blue</td>" in response.get_data(as_text=True))
+        self.assertTrue(
+            "<td>{}</td>".format(first_pet.breed.title())
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "<td>{}</td>".format(first_pet.species.title())
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            ">{}</a>".format(second_pet.name) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "<td>{}</td>".format(second_pet.breed.title())
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "<td>{}</td>".format(second_pet.species.title())
+            in response.get_data(as_text=True)
+        )
 
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
-
-        self.db_session.query(Pet).delete()
-        self.db_session.commit()
 
     def test_edit_pets(self):
         """Test GET, POST /edit_pet/<int:pet_id>"""
         register_user_helper(self.client)
         login_user_helper(self.client)
 
-        # No pets
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue("No pets found." in response.get_data(as_text=True))
 
-        # Add pet
-        duke = Pet(
-            name="duchess",
-            date_of_birth=date(2001, 1, 2),
-            species="feline",
-            breed="russian blue",
-            sex="m",
-            colour_and_identifying_marks="Black",
-        )
-        self.db_session.add(duke)
-        self.db_session.commit()
+        pet = add_pet_helper(self.db_session, random_pet())
 
         # Edit Pet
-        response = self.client.get("/edit_pet/{}".format(duke.id))
+        response = self.client.get("/edit_pet/{}".format(pet.id))
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('value="duchess"' in response.get_data(as_text=True))
-        self.assertTrue('value="feline"' in response.get_data(as_text=True))
-        self.assertTrue('value="russian blue"' in response.get_data(as_text=True))
+        self.assertTrue(
+            'value="{}"'.format(pet.name) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            'value="{}"'.format(pet.species) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            'value="{}"'.format(pet.breed) in response.get_data(as_text=True)
+        )
 
         response = self.client.post(
-            "/edit_pet/{}".format(duke.id),
-            data=dict(name="Sykes", species="canine", breed="russian grey"),
+            "/edit_pet/{}".format(pet.id),
+            data=dict(name="Sykes", species="canine", breed="russian grey", sex="m"),
             follow_redirects=True,
         )
         self.assertTrue(">Sykes</a>" in response.get_data(as_text=True))
@@ -427,34 +437,20 @@ class TestCasePets(unittest.TestCase):
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
 
-        self.db_session.query(Pet).delete()
-        self.db_session.commit()
-
     def test_delete_pets(self):
         """Test POST /delete_pet/<int:pet_id>"""
         register_user_helper(self.client)
         login_user_helper(self.client)
 
-        # No pets
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue("No pets found." in response.get_data(as_text=True))
 
-        # Add pet
-        duke = Pet(
-            name="duchess",
-            date_of_birth=date(2001, 1, 2),
-            species="feline",
-            breed="russian blue",
-            sex="m",
-            colour_and_identifying_marks="Black",
-        )
-        self.db_session.add(duke)
-        self.db_session.commit()
+        pet = add_pet_helper(self.db_session, random_pet())
 
         # Delete Pet
         response = self.client.post(
-            "/delete_pet/{}".format(duke.id), follow_redirects=True
+            "/delete_pet/{}".format(pet.id), follow_redirects=True
         )
         self.assertEqual(response.status_code, 200)
 
@@ -491,53 +487,88 @@ class TestCasePets(unittest.TestCase):
         register_user_helper(self.client)
         login_user_helper(self.client)
 
-        # Add pet
-        gin = Pet(
-            name="Gin",
-            date_of_birth=date(2001, 11, 22),
-            species="feline",
-            breed="collie",
-            sex="m",
-            colour_and_identifying_marks="Black",
+        pet = add_pet_helper(self.db_session, random_pet())
+
+        response = self.client.get("/view_pet/{}".format(pet.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            ">{}</td>".format(pet.name.title()) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            ">{}</td>".format(pet.date_of_birth) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            ">{}</td>".format(pet.breed.title()) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            ">{}</td>".format(pet.sex.title()) in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            ">{}</td>".format(pet.colour_and_identifying_marks)
+            in response.get_data(as_text=True)
         )
 
-        self.db_session.add(gin)
-        self.db_session.commit()
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 302)
 
-        response = self.client.get("/view_pet/{}".format(gin.id))
+    def test_validate_pet_schedule_details(self):
+        """Test valid details on creating a schedule /add_schedule/<int:pet_id>"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+
+        # Add Pet Schedule - No data entered
+        response = self.client.post(
+            "/add_schedule/{}".format(pet.id),
+            data=dict(
+                schedule_type="VACCINE", date_of_next="", repeats="", repeat_cycle="",
+            ),
+            follow_redirects=True,
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(">Gin</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>2001-11-22</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>collie</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>m</td>" in response.get_data(as_text=True))
-        self.assertTrue("<td>Black</td>" in response.get_data(as_text=True))
+        self.assertTrue(
+            "Please enter the Date (YYYY-MM-DD)" in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "Please select either Yes or No" in response.get_data(as_text=True)
+        )
+
+        # Add schedule, with a date in the past
+        response = self.client.post(
+            "/add_schedule/{}".format(pet.id),
+            data=dict(
+                schedule_type="VACCINE",
+                date_of_next="2001-02-01",
+                repeats="",
+                repeat_cycle="",
+            ),
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            "Please enter a date greater than today {}".format(date.today())
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "Please select either Yes or No" in response.get_data(as_text=True)
+        )
 
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
 
     def test_add_new_pet_schedule(self):
-        """Test POST /add_schedule"""
+        """Test POST /add_schedule/<int:pet_id>"""
         register_user_helper(self.client)
         login_user_helper(self.client)
 
-        # Add pet
-        kira = Pet(
-            name="Kira",
-            date_of_birth=date(2001, 11, 22),
-            species="feline",
-            breed="corgi",
-            sex="f",
-            colour_and_identifying_marks="white puppy with black ears",
-        )
-
-        self.db_session.add(kira)
-        self.db_session.commit()
+        pet = add_pet_helper(self.db_session, random_pet())
 
         response = self.client.post(
-            "/add_schedule/{}".format(kira.id),
+            "/add_schedule/{}".format(pet.id),
             data=dict(
                 schedule_type="VACCINE",
-                date_of_next="2019-02-15",
+                date_of_next=date.today() + timedelta(days=1),
                 repeats="YES",
                 repeat_cycle="YEARLY",
             ),
@@ -547,28 +578,17 @@ class TestCasePets(unittest.TestCase):
         self.assertEqual(1, self.db_session.query(Schedule).count())
 
     def test_add_new_pet_schedule_no_repeat_cycle(self):
-        """Test POST /add_schedule without a repeat_cycle"""
+        """Test POST /add_schedule/<int:pet_id> without a repeat_cycle"""
         register_user_helper(self.client)
         login_user_helper(self.client)
 
-        # Add pet
-        gin = Pet(
-            name="Gin",
-            date_of_birth=date(2001, 11, 22),
-            species="reptile",
-            breed="guppy",
-            sex="f",
-            colour_and_identifying_marks="silver and really tiny",
-        )
-
-        self.db_session.add(gin)
-        self.db_session.commit()
+        pet = add_pet_helper(self.db_session, random_pet())
 
         response = self.client.post(
-            "/add_schedule/{}".format(gin.id),
+            "/add_schedule/{}".format(pet.id),
             data=dict(
                 schedule_type="FRONTLINE",
-                date_of_next="2019-02-15",
+                date_of_next=date.today() + timedelta(days=2),
                 repeats="NO",
                 repeat_cycle="",
             ),
@@ -576,6 +596,57 @@ class TestCasePets(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, self.db_session.query(Schedule).count())
+
+    def test_view_pet_schedules(self):
+        """Test GET /view_pet with due and past schedules"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        due_schedule = add_pet_schedule_helper(self.db_session, pet, random_schedule())
+        past_schedule = add_pet_schedule_helper(
+            self.db_session, pet, random_schedule(past=True)
+        )
+
+        self.assertEqual(2, self.db_session.query(Schedule).count())
+
+        response = self.client.get("/view_pet/{}".format(pet.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(">{}</td>".format(pet.name) in response.get_data(as_text=True))
+        self.assertTrue("<h5>Schedules</h5>" in response.get_data(as_text=True))
+        self.assertTrue(
+            "<td>{}</td>".format(due_schedule.schedule_type.title())
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "<td>{}</td>".format(due_schedule.date_of_next)
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue("<h5>History</h5>" in response.get_data(as_text=True))
+        self.assertTrue(
+            "<td>{}</td>".format(past_schedule.schedule_type.title())
+            in response.get_data(as_text=True)
+        )
+        self.assertTrue(
+            "<td>{}</td>".format(past_schedule.date_of_next)
+            in response.get_data(as_text=True)
+        )
+
+    def test_delete_pet_schedule(self):
+        """Test POST /delete_schedule"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        pet_schedule = add_pet_schedule_helper(self.db_session, pet, random_schedule())
+
+        self.assertEqual(1, self.db_session.query(Schedule).count())
+
+        response = self.client.post(
+            "/delete_schedule/{}".format(pet_schedule.id), follow_redirects=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(0, self.db_session.query(Schedule).count())
 
 
 if __name__ == "__main__":

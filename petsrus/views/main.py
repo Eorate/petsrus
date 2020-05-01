@@ -1,14 +1,14 @@
 import traceback
+from datetime import date
 
-from flask import render_template, redirect, request, url_for, flash
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
-
-from sqlalchemy import exc
-from sqlalchemy.orm import sessionmaker
 from sentry_sdk import capture_exception
+from sqlalchemy import desc, exc
+from sqlalchemy.orm import sessionmaker
+from werkzeug.security import check_password_hash, generate_password_hash
 
-from petsrus.petsrus import app, engine, login_manager
+from petsrus.forms.forms import LoginForm, PetForm, PetScheduleForm, RegistrationForm
 from petsrus.models.models import (
     Base,
     Pet,
@@ -18,8 +18,7 @@ from petsrus.models.models import (
     Schedule_type,
     User,
 )
-from petsrus.forms.forms import LoginForm, PetForm, PetScheduleForm, RegistrationForm
-
+from petsrus.petsrus import app, engine, login_manager
 
 Base.metadata.bind = engine
 Base.metadata.create_all()
@@ -83,6 +82,7 @@ def add_pet():
             flash("Saved Pet", "success")
             return redirect(url_for("index"))
         except Exception as exc:
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
     else:
         return render_template("pets.html", add=True, form=form)
@@ -110,6 +110,7 @@ def edit_pet(pet_id):
             flash("Updated Pet Details", "success")
             return redirect(url_for("index"))
         except Exception as exc:
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
     else:
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
@@ -119,8 +120,21 @@ def edit_pet(pet_id):
 @login_required
 def view_pet(pet_id):
     pet = db_session.query(Pet).filter_by(id=pet_id).first()
-    schedules = db_session.query(Schedule).filter_by(pet_id=pet_id).all()
-    return render_template("pet_details.html", pet=pet, schedules=schedules)
+    due = (
+        db_session.query(Schedule)
+        .filter(Schedule.pet_id == pet_id, Schedule.date_of_next >= date.today())
+        .order_by(desc(Schedule.date_of_next))
+        .all()
+    )
+    past = (
+        db_session.query(Schedule)
+        .filter(Schedule.pet_id == pet_id, Schedule.date_of_next < date.today())
+        .order_by(desc(Schedule.date_of_next))
+        .all()
+    )
+    return render_template(
+        "pet_details.html", pet=pet, due_schedules=due, past_schedules=past
+    )
 
 
 # https://dzone.com/articles/flask-101-filtering-searches-and-deleting-data
@@ -138,7 +152,7 @@ def delete_pet(pet_id):
             flash("Deleted Pet Details", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            traceback.format_exc()
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
 
 
@@ -164,7 +178,7 @@ def add_schedule(pet_id):
             flash("Saved Pet Schedule", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            traceback.format_exc()
+            app.logger.error(traceback.format_exc)
             capture_exception(exc)
     else:
         return render_template("pet_schedule.html", form=form, pet_id=pet_id)
@@ -173,7 +187,16 @@ def add_schedule(pet_id):
 @app.route("/delete_schedule/<int:schedule_id>", methods=["POST"])
 @login_required
 def delete_schedule(schedule_id):
-    pass
+    try:
+        if request.method == "POST":
+            schedule = db_session.query(Schedule).get(schedule_id)
+            db_session.delete(schedule)
+            db_session.commit()
+            flash("Deleted Pet Schedule", "success")
+            return redirect(url_for("index"))
+    except Exception as exc:
+        app.logger.error(traceback.format_exc)
+        capture_exception(exc)
 
 
 @app.route("/", methods=["GET", "POST"])

@@ -1,5 +1,7 @@
 alembic==1.0.10
 coverage==4.5.4
+email-validator==1.0.5
+Faker==4.0.3
 Flask==1.0.3
 Flask-Login==0.4.1
 Flask-SQLAlchemy==2.4.0

@@ -31,35 +31,36 @@
     <h5>Pet details</h5>
     <div class="table-responsive-sm">
         <table class="table table-striped table-bordered table-hover">
-          <tr>
-              <th scope="row" class="header darker">Name</th>
-              <td class="col-8">{{pet.name}}</td>
+          <tr class="d-flex">
+              <th scope="row" class="header darker col-4">Name</th>
+              <td class="col-8">{{pet.name|title}}</td>
           </tr>
-          <tr>
-              <th scope="row" class="header darker">Date of Birth</th>
-              <td>{{pet.date_of_birth}}</td>
+          <tr class="d-flex">
+              <th scope="row" class="header darker col-4">Date of Birth</th>
+              <td class="col-8">{{pet.date_of_birth}}</td>
           </tr>
-          <tr>
-              <th scope="row" class="header">Breed</th>
-              <td>{{pet.breed}}</td>
+          <tr class="d-flex">
+              <th scope="row" class="header col-4">Breed</th>
+              <td class="col-8">{{pet.breed|title}}</td>
           </tr>
-          <tr>
-            <th scope="row" class="header">Sex</th>
-            <td>{{pet.sex}}</td>
+          <tr class="d-flex">
+            <th scope="row" class="header col-4">Sex</th>
+            <td class="col-8">{{pet.sex|title}}</td>
           </tr>
-          <tr>
-            <th scope="row" class="header">Colour and Identifying marks</th>
-            <td>{{pet.colour_and_identifying_marks}}</td>
+          <tr class="d-flex">
+            <th scope="row" class="header col-4">Colour and Identifying marks</th>
+            <td class="col-8">{{pet.colour_and_identifying_marks}}</td>
           </tr>
         </table>
     </div>
-    {% if schedules %}
-        <h5> Schedules </h5>
+        <p><a href="/add_schedule/{{pet.id}}">Add Schedule</a></p>
+    {% if due_schedules %}
+        <h5>Schedules</h5>
         <div class="table-responsive-sm">
             <table class="table table-striped table-bordered table-hover">
             <thead class="thead-dark">
               <tr>
-                <th>Schedule_type</th>
+                <th>Schedule Type</th>
                 <th>Date of Next</th>
                 <th>Repeats</th>
                 <th>Repeat Cycle</th>
@@ -67,9 +68,9 @@
               </tr>
             </thead>
             <tbody>
-            {% for schedule in schedules %}
+                {% for schedule in due_schedules %}
               <tr>
-                  <td>{{schedule.schedule_type|title}}</a></td>
+                  <td>{{schedule.schedule_type|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
                   <td>{{schedule.repeat_cycle}}</td>
@@ -116,8 +117,33 @@
             </tbody>
             </table>
         </div>
-    {% else %}
-        <p> No schedules recorded yet. <a href="/add_schedule/{{pet.id}}">Add Schedule</a></p>
+    {% endif %}
+    {% if past_schedules %}
+        <h5>History</h5>
+        <div class="table-responsive-sm">
+            <table class="table table-striped table-bordered table-hover">
+            <thead class="thead-dark">
+              <tr>
+                <th>Schedule Type</th>
+                <th>Date of Last</th>
+                <th>Repeats</th>
+                <th>Repeat Cycle</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for schedule in past_schedules %}
+              <tr>
+                  <td>{{schedule.schedule_type|title}}</td>
+                  <td>{{schedule.date_of_next}}</td>
+                  <td>{{schedule.repeats}}</td>
+                  <td>{{schedule.repeat_cycle}}</td>
+                  <td>&nbsp;</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        </div>
     {% endif %}
     </div>
 
