@@ -1,10 +1,10 @@
 # coding=utf-8
 import unittest
 
-from petsrus.models.models import User
 from petsrus.petsrus import app
-from petsrus.tests.helper import login_user_helper, register_user_helper
+from petsrus.models.models import Pet, User
 from petsrus.views.main import db_session
+from petsrus.tests.helper import register_user_helper, login_user_helper
 
 
 class TestCaseUsers(unittest.TestCase):
@@ -12,11 +12,10 @@ class TestCaseUsers(unittest.TestCase):
         self.client = app.test_client()
         self.client.testing = True
         self.db_session = db_session
-        self.db_session.query(User).delete()
-        self.db_session.commit()
 
     def tearDown(self):
         self.db_session.query(User).delete()
+        self.db_session.query(Pet).delete()
         self.db_session.commit()
         self.db_session.close()
 
