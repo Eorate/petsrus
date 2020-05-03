@@ -73,7 +73,11 @@
                   <td>{{schedule.schedule_type|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
-                  <td>{{schedule.repeat_cycle}}</td>
+                  {% if schedule.repeat_cycle %}
+                    <td>{{schedule.repeat_cycle}}</td>
+                  {% else %}
+                    <td>&mdash;</td>
+                  {% endif %}
                   <td><button
                           type="button"
                           class="btn btn-danger"
@@ -91,6 +95,8 @@
                       <div class="modal-content">
 
                         <form class="modal-content" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}" method=post>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
                         <!-- Modal Header -->
                         <div class="modal-header">
                           <h4 class="modal-title">Delete Schedule</h4>
@@ -137,7 +143,11 @@
                   <td>{{schedule.schedule_type|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
-                  <td>{{schedule.repeat_cycle}}</td>
+                  {% if schedule.repeat_cycle %}
+                    <td>{{schedule.repeat_cycle}}</td>
+                  {% else %}
+                    <td>&mdash;</td>
+                  {% endif %}
                   <td>&nbsp;</td>
               </tr>
             {% endfor %}
