@@ -94,10 +94,9 @@
                     <div class="modal-dialog modal-lg">
                       <div class="modal-content">
 
-
-                        <form class="modal-content" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}" method=post name="schedule">
-                        {{ schedule.csrf_token }}
-
+                        <form class="modal-content" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}" method=post>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
                         <!-- Modal Header -->
                         <div class="modal-header">
                           <h4 class="modal-title">Delete Schedule</h4>
