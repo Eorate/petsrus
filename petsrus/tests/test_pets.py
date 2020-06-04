@@ -1,6 +1,9 @@
 # coding=utf-8
+import os
 import unittest
+import warnings
 from datetime import date, timedelta
+from io import BytesIO
 
 from petsrus.models.models import Pet, Schedule, User
 from petsrus.petsrus import app
@@ -81,6 +84,7 @@ class TestCasePets(unittest.TestCase):
 
     def test_pets_validate_name(self):
         """Test pet name validation"""
+        warnings.simplefilter("ignore", DeprecationWarning)
         register_user_helper(self.client)
         login_user_helper(self.client)
 
@@ -651,6 +655,78 @@ class TestCasePets(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(0, self.db_session.query(Schedule).count())
+
+    def test_update_pet_photo_validation(self):
+        """Test validation for updating a pet photo"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"image_file": (BytesIO("IMAGE DATA".encode()), "picture.jpg")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "No file part", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (BytesIO("IMAGE DATA".encode()), "")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "No selected photo", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (BytesIO("IMAGE DATA".encode()), "picture.wrong_extension")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "Photo type not allowed. Use png, gif, jpeg or jpg",
+            response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (BytesIO("IMAGE DATA".encode()), "picture.jpg")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "Unidentified Image Error", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_pet_photo(self):
+        """Test updating a pet photo"""
+        # https://github.com/boto/boto3/issues/454
+        # https://github.com/psf/requests/issues/3912
+        warnings.simplefilter("ignore", ResourceWarning)
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        test_image = os.path.join("./petsrus/tests/assets/2020155847.jpg")
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (test_image, "new_image.png",)},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "Changed Pet Photo", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 if __name__ == "__main__":
