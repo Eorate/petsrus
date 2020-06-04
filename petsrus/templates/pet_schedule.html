@@ -91,5 +91,34 @@
       </div>
     </form>
     </div>
+
+<script type="text/javascript">
+// "Yes" Radio button
+document.getElementById('repeats-0').onchange = displayTextBox;
+// "No" Radio button
+document.getElementById('repeats-1').onchange = displayTextBox;
+
+var monthlyRadioButton = document.getElementById('repeat_cycle-0');
+var quarterlyRadioButton = document.getElementById('repeat_cycle-1');
+var yearlyRadioButton = document.getElementById('repeat_cycle-2');
+monthlyRadioButton.disabled = true;
+quarterlyRadioButton.disabled = true;
+yearlyRadioButton.disabled = true;
+
+function displayTextBox(evt) {
+    if(evt.target.value == "YES") {
+        monthlyRadioButton.disabled = false;
+        quarterlyRadioButton.disabled = false;
+        yearlyRadioButton.disabled = false;
+        yearlyRadioButton.checked = true;
+    } else {
+        monthlyRadioButton.disabled = true;
+        quarterlyRadioButton.disabled = true;
+        yearlyRadioButton.disabled = true;
+        yearlyRadioButton.checked = false;
+    }
+}
+
+</script>
 {% endblock %}
 

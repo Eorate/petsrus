@@ -29,31 +29,89 @@
 {% if current_user.is_authenticated %}
     <div class="container p-3">
     <h5>Pet details</h5>
-    <div class="table-responsive-sm">
-        <table class="table table-striped table-bordered table-hover">
-          <tr class="d-flex">
-              <th scope="row" class="header darker col-4">Name</th>
-              <td class="col-8">{{pet.name|title}}</td>
-          </tr>
-          <tr class="d-flex">
-              <th scope="row" class="header darker col-4">Date of Birth</th>
-              <td class="col-8">{{pet.date_of_birth}}</td>
-          </tr>
-          <tr class="d-flex">
-              <th scope="row" class="header col-4">Breed</th>
-              <td class="col-8">{{pet.breed|title}}</td>
-          </tr>
-          <tr class="d-flex">
-            <th scope="row" class="header col-4">Sex</th>
-            <td class="col-8">{{pet.sex|title}}</td>
-          </tr>
-          <tr class="d-flex">
-            <th scope="row" class="header col-4">Colour and Identifying marks</th>
-            <td class="col-8">{{pet.colour_and_identifying_marks}}</td>
-          </tr>
-        </table>
+        <div class="row">
+            <div class="col-sm-9 col-md-9">
+                <!--<div class="table-responsive-sm">-->
+                    <table class="table table-striped table-bordered table-hover">
+                      <tr class="d-flex">
+                          <th scope="row" class="header darker col-4">Name</th>
+                          <td class="col-8">{{pet.name|title}}</td>
+                      </tr>
+                      <tr class="d-flex">
+                          <th scope="row" class="header darker col-4">Date of Birth</th>
+                          <td class="col-8">{{pet.date_of_birth}}</td>
+                      </tr>
+                      <tr class="d-flex">
+                          <th scope="row" class="header col-4">Breed</th>
+                          <td class="col-8">{{pet.breed|title}}</td>
+                      </tr>
+                      <tr class="d-flex">
+                        <th scope="row" class="header col-4">Sex</th>
+                        <td class="col-8">{{pet.sex|title}}</td>
+                      </tr>
+                      <tr class="d-flex">
+                        <th scope="row" class="header col-4">Colour and Identifying marks</th>
+                        <td class="col-8">{{pet.colour_and_identifying_marks}}</td>
+                      </tr>
+                    </table>
+                    <!--</div>--> <!-- end div class responsive -->
+            </div> <!-- end div class col 9-->
+            <div class="col-sm-3 col-md-3 d-flex align-self-upper flex-column">
+              <img
+                type="button"
+                src="{{uploaded_image_url}}/{{bucket_name}}/{{pet.photo}}"
+                alt="pet image"
+                class="img-fluid mx-auto d-block"
+                style="width:400px;height:252px;"
+                data-toggle="modal"
+                data-target="#changePhotoModal{{pet.id}}"
+                data-keyboard="true"
+                data-focus="true"
+              \>
+              <!-- The Modal -->
+              <div class="modal fade" id="changePhotoModal{{pet.id}}">
+                <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+
+                    <form
+                        class="modal-content"
+                        action="{{ url_for('update_pet_photo', pet_id=pet.id) }}"
+                        method="post"
+                        enctype="multipart/form-data"
+                    >
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                      <h4 class="modal-title">Change Pet Photo</h4>
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div>
+                        {{ change_photo_form.csrf_token }}
+                        <div class="form-group files">
+                        {{ change_photo_form.photo(class="form-control", required=False) }}
+                        </div>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        {{ change_photo_form.save(class="btn btn-primary") }}
+                    </div>
+
+                    </form>
+                  </div>
+                </div>
+              </div>
+        </div> <!-- end div class col 3-->
+    </div> <!-- end div class row -->
+
+    <div class="d-flex flex-row-reverse">
+        <div class="p-2">
+            <a href="/add_schedule/{{pet.id}}">Add Schedule</a>
+        </div>
     </div>
-        <p><a href="/add_schedule/{{pet.id}}">Add Schedule</a></p>
+
     {% if due_schedules %}
         <h5>Schedules</h5>
         <div class="table-responsive-sm">
@@ -158,5 +216,12 @@
     </div>
 
 {% endif %}
+<script>
+// Add the following code if you want the name of the file appear on select
+$(".custom-file-input").on("change", function() {
+  var fileName = $(this).val().split("\\").pop();
+  $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+});
 
+</script>
 {% endblock %}
