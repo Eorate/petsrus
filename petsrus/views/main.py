@@ -229,17 +229,15 @@ def view_pet(pet_id):
 def delete_pet(pet_id):
     if request.method == "POST":
         try:
-            schedule = db_session.query(Schedule).get(pet_id)
             pet = db_session.query(Pet).get(pet_id)
-            if schedule:
-                db_session.delete(schedule)
             db_session.delete(pet)
             db_session.commit()
             flash("Deleted Pet Details", "success")
-            return redirect(url_for("index"))
         except Exception as exc:
+            flash("An unexpected issue occured while attempting to delete", "danger")
             app.logger.error(traceback.format_exc)
             capture_exception(exc)
+        return redirect(url_for("index"))
 
 
 @app.route("/add_schedule/<int:pet_id>", methods=["GET", "POST"])
@@ -262,7 +260,7 @@ def add_schedule(pet_id):
             db_session.add(pet_schedule)
             db_session.commit()
             flash("Saved Pet Schedule", "success")
-            return redirect(url_for("index"))
+            return redirect(url_for("view_pet", pet_id=pet_id))
         except Exception as exc:
             app.logger.error(traceback.format_exc)
             capture_exception(exc)
@@ -279,7 +277,7 @@ def delete_schedule(schedule_id):
             db_session.delete(schedule)
             db_session.commit()
             flash("Deleted Pet Schedule", "success")
-            return redirect(url_for("index"))
+            return redirect(url_for("view_pet", pet_id=schedule.pet_id))
     except Exception as exc:
         app.logger.error(traceback.format_exc)
         capture_exception(exc)
