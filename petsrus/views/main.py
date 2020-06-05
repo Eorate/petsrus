@@ -152,8 +152,7 @@ def update_pet_photo(pet_id):
             # submit an empty part without filename
             if photo.filename == "":
                 flash("No selected photo", "danger")
-                return redirect(url_for("view_pet", pet_id=pet_id))
-            if photo and allowed_file(photo.filename):
+            elif photo and allowed_file(photo.filename):
                 random_hex = secrets.token_hex(8)
                 output_size = (WIDTH, HEIGHT)
                 filename = secure_filename(photo.filename)
@@ -182,17 +181,19 @@ def update_pet_photo(pet_id):
                     pet.photo = picture_filename
                     db_session.commit()
                     flash("Changed Pet Photo", "success")
-                    return redirect(url_for("view_pet", pet_id=pet_id))
             else:
                 flash("Photo type not allowed. Use png, gif, jpeg or jpg", "danger")
-                return redirect(url_for("view_pet", pet_id=pet_id))
         except UnidentifiedImageError as error:
-            app.logger.error(error)
             flash("Unidentified Image Error", "danger")
-            return redirect(url_for("view_pet", pet_id=pet_id))
+            app.logger.error(error)
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            flash(
+                "An unexpected issue occured while attempting to update pet photo",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
+        return redirect(url_for("view_pet", pet_id=pet_id))
 
 
 @app.route("/view_pet/<int:pet_id>", methods=["GET"])
