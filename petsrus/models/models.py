@@ -2,6 +2,7 @@ from enum import Enum
 
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -81,6 +82,10 @@ class Pet(Base):
     sex = Column(String(1), nullable=False)
     colour_and_identifying_marks = Column(String(200), nullable=False)
     photo = Column(Text, nullable=True, default="default.png")
+
+    schedules = relationship(
+        "Schedule", backref="pet", cascade="all, delete, delete-orphan"
+    )
 
     def __repr__(self):
         return (

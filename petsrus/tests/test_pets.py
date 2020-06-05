@@ -7,14 +7,9 @@ from io import BytesIO
 
 from petsrus.models.models import Pet, Schedule, User
 from petsrus.petsrus import app
-from petsrus.tests.helper import (
-    add_pet_helper,
-    add_pet_schedule_helper,
-    login_user_helper,
-    random_pet,
-    random_schedule,
-    register_user_helper,
-)
+from petsrus.tests.helper import (add_pet_helper, add_pet_schedule_helper,
+                                  login_user_helper, random_pet,
+                                  random_schedule, register_user_helper)
 from petsrus.views.main import db_session
 
 
@@ -455,6 +450,31 @@ class TestCasePets(unittest.TestCase):
         self.assertTrue("No pets found." in response.get_data(as_text=True))
 
         pet = add_pet_helper(self.db_session, random_pet())
+
+        # Delete Pet
+        response = self.client.post(
+            "/delete_pet/{}".format(pet.id), follow_redirects=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # No pets
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("No pets found." in response.get_data(as_text=True))
+
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 302)
+
+    def test_delete_pets_with_schedules(self):
+        """Test POST /delete_pet/<int:pet_id> with schedules"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        add_pet_schedule_helper(self.db_session, pet, random_schedule())
+        add_pet_schedule_helper(self.db_session, pet, random_schedule())
+
+        self.assertEqual(2, self.db_session.query(Schedule).count())
 
         # Delete Pet
         response = self.client.post(
