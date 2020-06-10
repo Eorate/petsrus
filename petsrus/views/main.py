@@ -97,7 +97,7 @@ def add_pet():
             flash("Saved Pet", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
     else:
         return render_template("pets.html", add=True, form=form)
@@ -125,7 +125,7 @@ def edit_pet(pet_id):
             flash("Updated Pet Details", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
     else:
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
@@ -266,7 +266,7 @@ def add_schedule(pet_id):
             flash("Saved Pet Schedule", "success")
             return redirect(url_for("view_pet", pet_id=pet_id))
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
     else:
         return render_template("pet_schedule.html", form=form, pet_id=pet_id)
