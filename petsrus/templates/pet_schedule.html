@@ -87,7 +87,10 @@
           </div>
       </div>
       <div class="text-center">
-      <button type="submit" class="btn btn-primary w-25">Save</button>
+          <a href="{{ url_for('view_pet', pet_id=pet_id) }}"
+             class="btn btn-secondary w-25"
+             role="button">Cancel</a>
+          <button type="submit" class="btn btn-primary w-25">Save</button>
       </div>
     </form>
     </div>

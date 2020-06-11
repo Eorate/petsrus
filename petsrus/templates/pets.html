@@ -47,6 +47,7 @@
         {{ render_field(form.sex, class='form-control', placeholder="Sex", required=False) }}
         {{ render_field(form.colour_and_identifying_marks, class='form-control', placeholder="Colour and identifying marks", required=False) }}
       <div class="text-center">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary w-25" role="button">Cancel</a>
 {% if add %}
       <button type="submit" class="btn btn-primary w-25">Save</button>
 {% elif edit %}
