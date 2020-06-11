@@ -13,22 +13,10 @@ from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
-from petsrus.forms.forms import (
-    ChangePetPhotoForm,
-    LoginForm,
-    PetForm,
-    PetScheduleForm,
-    RegistrationForm,
-)
-from petsrus.models.models import (
-    Base,
-    Pet,
-    Repeat,
-    Repeat_cycle,
-    Schedule,
-    Schedule_type,
-    User,
-)
+from petsrus.forms.forms import (ChangePetPhotoForm, LoginForm, PetForm,
+                                 PetScheduleForm, RegistrationForm)
+from petsrus.models.models import (Base, Pet, Repeat, Repeat_cycle, Schedule,
+                                   Schedule_type, User)
 from petsrus.petsrus import app, engine, login_manager
 
 Base.metadata.bind = engine
@@ -97,8 +85,12 @@ def add_pet():
             flash("Saved Pet", "success")
             return redirect(url_for("index"))
         except Exception as exc:
+            flash(
+                "An unexpected issue occured while attempting to add a pet", "danger",
+            )
             app.logger.error(traceback.format_exc())
             capture_exception(exc)
+            return render_template("pets.html", add=True, form=form)
     else:
         return render_template("pets.html", add=True, form=form)
 
@@ -127,6 +119,10 @@ def edit_pet(pet_id):
         except Exception as exc:
             app.logger.error(traceback.format_exc())
             capture_exception(exc)
+            flash(
+                "An unexpected issue occured while attempting to update pet", "danger",
+            )
+            return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
     else:
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
 
@@ -264,10 +260,14 @@ def add_schedule(pet_id):
             db_session.add(pet_schedule)
             db_session.commit()
             flash("Saved Pet Schedule", "success")
-            return redirect(url_for("view_pet", pet_id=pet_id))
         except Exception as exc:
+            flash(
+                "An unexpected issue occured while attempting to add a schedule",
+                "danger",
+            )
             app.logger.error(traceback.format_exc())
             capture_exception(exc)
+        return redirect(url_for("view_pet", pet_id=pet_id))
     else:
         return render_template("pet_schedule.html", form=form, pet_id=pet_id)
 
