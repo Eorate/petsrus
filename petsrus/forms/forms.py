@@ -1,23 +1,12 @@
 from datetime import date
 
 from flask_wtf import FlaskForm
-from wtforms import (
-    IntegerField,
-    PasswordField,
-    RadioField,
-    SelectField,
-    StringField,
-    SubmitField,
-)
+from flask_wtf.file import FileField
+from wtforms import (IntegerField, PasswordField, RadioField, SelectField,
+                     StringField, SubmitField)
 from wtforms.fields.html5 import DateField
-from wtforms.validators import (
-    DataRequired,
-    Email,
-    EqualTo,
-    InputRequired,
-    Length,
-    Optional,
-)
+from wtforms.validators import (DataRequired, Email, EqualTo, InputRequired,
+                                Length, Optional)
 
 from petsrus.forms.validators import FutureDate, PastDate
 from petsrus.models.models import Repeat, Repeat_cycle, Schedule_type
@@ -142,3 +131,8 @@ class PetScheduleForm(FlaskForm):
     )
     schedule_type = SelectField(choices=Schedule_type.__values__)
     save = SubmitField("Save")
+
+
+class ChangePetPhotoForm(FlaskForm):
+    photo = FileField()
+    save = SubmitField("Upload Photo")

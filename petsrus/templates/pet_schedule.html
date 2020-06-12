@@ -87,9 +87,41 @@
           </div>
       </div>
       <div class="text-center">
-      <button type="submit" class="btn btn-primary w-25">Save</button>
+          <a href="{{ url_for('view_pet', pet_id=pet_id) }}"
+             class="btn btn-secondary w-25"
+             role="button">Cancel</a>
+          <button type="submit" class="btn btn-primary w-25">Save</button>
       </div>
     </form>
     </div>
+
+<script type="text/javascript">
+// "Yes" Radio button
+document.getElementById('repeats-0').onchange = displayTextBox;
+// "No" Radio button
+document.getElementById('repeats-1').onchange = displayTextBox;
+
+var monthlyRadioButton = document.getElementById('repeat_cycle-0');
+var quarterlyRadioButton = document.getElementById('repeat_cycle-1');
+var yearlyRadioButton = document.getElementById('repeat_cycle-2');
+monthlyRadioButton.disabled = true;
+quarterlyRadioButton.disabled = true;
+yearlyRadioButton.disabled = true;
+
+function displayTextBox(evt) {
+    if(evt.target.value == "YES") {
+        monthlyRadioButton.disabled = false;
+        quarterlyRadioButton.disabled = false;
+        yearlyRadioButton.disabled = false;
+        yearlyRadioButton.checked = true;
+    } else {
+        monthlyRadioButton.disabled = true;
+        quarterlyRadioButton.disabled = true;
+        yearlyRadioButton.disabled = true;
+        yearlyRadioButton.checked = false;
+    }
+}
+
+</script>
 {% endblock %}
 

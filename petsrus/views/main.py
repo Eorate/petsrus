@@ -1,29 +1,32 @@
+import os
+import secrets
 import traceback
 from datetime import date
 
+import boto3
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
+from PIL import Image, UnidentifiedImageError
 from sentry_sdk import capture_exception
 from sqlalchemy import desc, exc
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
-from petsrus.forms.forms import LoginForm, PetForm, PetScheduleForm, RegistrationForm
-from petsrus.models.models import (
-    Base,
-    Pet,
-    Repeat,
-    Repeat_cycle,
-    Schedule,
-    Schedule_type,
-    User,
-)
+from petsrus.forms.forms import (ChangePetPhotoForm, LoginForm, PetForm,
+                                 PetScheduleForm, RegistrationForm)
+from petsrus.models.models import (Base, Pet, Repeat, Repeat_cycle, Schedule,
+                                   Schedule_type, User)
 from petsrus.petsrus import app, engine, login_manager
 
 Base.metadata.bind = engine
 Base.metadata.create_all()
 DBSession = sessionmaker(bind=engine)
 db_session = DBSession()
+
+# Dimensions of resized pet images
+WIDTH = 400
+HEIGHT = 252
 
 
 @login_manager.user_loader
@@ -82,8 +85,12 @@ def add_pet():
             flash("Saved Pet", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            flash(
+                "An unexpected issue occured while attempting to add a pet", "danger",
+            )
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
+            return render_template("pets.html", add=True, form=form)
     else:
         return render_template("pets.html", add=True, form=form)
 
@@ -110,16 +117,86 @@ def edit_pet(pet_id):
             flash("Updated Pet Details", "success")
             return redirect(url_for("index"))
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
+            flash(
+                "An unexpected issue occured while attempting to update pet", "danger",
+            )
+            return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
     else:
         return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
+
+
+def allowed_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
+    )
+
+
+@app.route("/update_pet_photo/<int:pet_id>", methods=["POST"])
+@login_required
+def update_pet_photo(pet_id):
+    pet = db_session.query(Pet).filter_by(id=pet_id).first()
+    if request.method == "POST":
+        try:
+            if "photo" not in request.files:
+                flash("No file part", "danger")
+                return redirect(url_for("view_pet", pet_id=pet_id))
+            photo = request.files["photo"]
+            # if user does not select file, the browser may also
+            # submit an empty part without filename
+            if photo.filename == "":
+                flash("No selected photo", "danger")
+            elif photo and allowed_file(photo.filename):
+                random_hex = secrets.token_hex(8)
+                output_size = (WIDTH, HEIGHT)
+                filename = secure_filename(photo.filename)
+                _, filename_extension = os.path.splitext(filename)
+                photo.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                picture_filename = random_hex + filename_extension
+                picture_path = os.path.join(
+                    app.config["UPLOAD_FOLDER"], picture_filename
+                )
+                with Image.open(
+                    os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                ) as img:
+                    new_image = img.resize(output_size)
+                    new_image.save(picture_path)
+                    s3_client = boto3.client(
+                        "s3", endpoint_url=app.config["BACKBLAZE_URL"]
+                    )
+                    s3_client.upload_file(
+                        os.path.join(app.config["UPLOAD_FOLDER"], picture_filename),
+                        app.config["S3_BUCKET"],
+                        picture_filename,
+                        ExtraArgs={
+                            "ContentType": "image/{}".format(filename_extension)
+                        },
+                    )
+                    pet.photo = picture_filename
+                    db_session.commit()
+                    flash("Changed Pet Photo", "success")
+            else:
+                flash("Photo type not allowed. Use png, gif, jpeg or jpg", "danger")
+        except UnidentifiedImageError as error:
+            flash("Unidentified Image Error", "danger")
+            app.logger.error(error)
+        except Exception as exc:
+            flash(
+                "An unexpected issue occured while attempting to update pet photo",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
+            capture_exception(exc)
+        return redirect(url_for("view_pet", pet_id=pet_id))
 
 
 @app.route("/view_pet/<int:pet_id>", methods=["GET"])
 @login_required
 def view_pet(pet_id):
     pet = db_session.query(Pet).filter_by(id=pet_id).first()
+    form = ChangePetPhotoForm()
     due = (
         db_session.query(Schedule)
         .filter(Schedule.pet_id == pet_id, Schedule.date_of_next >= date.today())
@@ -133,7 +210,13 @@ def view_pet(pet_id):
         .all()
     )
     return render_template(
-        "pet_details.html", pet=pet, due_schedules=due, past_schedules=past
+        "pet_details.html",
+        bucket_name=app.config["S3_BUCKET"],
+        change_photo_form=form,
+        due_schedules=due,
+        past_schedules=past,
+        pet=pet,
+        uploaded_image_url=app.config["UPLOADED_IMAGE_URL"],
     )
 
 
@@ -143,17 +226,18 @@ def view_pet(pet_id):
 def delete_pet(pet_id):
     if request.method == "POST":
         try:
-            schedule = db_session.query(Schedule).get(pet_id)
             pet = db_session.query(Pet).get(pet_id)
-            if schedule:
-                db_session.delete(schedule)
             db_session.delete(pet)
             db_session.commit()
             flash("Deleted Pet Details", "success")
-            return redirect(url_for("index"))
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            flash(
+                "An unexpected issue occured while attempting to delete this pet",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
+        return redirect(url_for("index"))
 
 
 @app.route("/add_schedule/<int:pet_id>", methods=["GET", "POST"])
@@ -176,10 +260,14 @@ def add_schedule(pet_id):
             db_session.add(pet_schedule)
             db_session.commit()
             flash("Saved Pet Schedule", "success")
-            return redirect(url_for("index"))
         except Exception as exc:
-            app.logger.error(traceback.format_exc)
+            flash(
+                "An unexpected issue occured while attempting to add a schedule",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
             capture_exception(exc)
+        return redirect(url_for("view_pet", pet_id=pet_id))
     else:
         return render_template("pet_schedule.html", form=form, pet_id=pet_id)
 
@@ -187,16 +275,20 @@ def add_schedule(pet_id):
 @app.route("/delete_schedule/<int:schedule_id>", methods=["POST"])
 @login_required
 def delete_schedule(schedule_id):
-    try:
-        if request.method == "POST":
-            schedule = db_session.query(Schedule).get(schedule_id)
+    if request.method == "POST":
+        schedule = db_session.query(Schedule).get(schedule_id)
+        try:
             db_session.delete(schedule)
             db_session.commit()
             flash("Deleted Pet Schedule", "success")
-            return redirect(url_for("index"))
-    except Exception as exc:
-        app.logger.error(traceback.format_exc)
-        capture_exception(exc)
+        except Exception as exc:
+            flash(
+                "An unexpected issue occured while attempting to delete a schedule",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
+            capture_exception(exc)
+        return redirect(url_for("view_pet", pet_id=schedule.pet_id))
 
 
 @app.route("/", methods=["GET", "POST"])

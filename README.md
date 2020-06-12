@@ -11,14 +11,28 @@ Implement a simple python-flask website to manage pets.
 
 ```
 $ less test.env
-export FLASK_ENV=development
 export APP_SETTINGS="config.TestingConfig"
+export AWS_ACCESS_KEY_ID=<aws-access-key-id>
+export AWS_SECRET_ACCESS_KEY=<aws-secret-access-key>
+export AWS_DEFAULT_REGION=<aws-default-region>
+export BACKBLAZE_URL=<backblaze-url>
 export DEBUG=True
 export DATABASE_URL=sqlite:///test.db
 # or 
 export DATABASE_URL="postgresql://<databaseuser>:<password>@<host>:5432/<database>"
+export FLASK_ENV=development
+export S3_BUCKET=<s3-bucket-name>
 export SECRET_KEY=<insert a random string here>
+export SENTRY_ENVIRONMENT=testing
+export SENTRY_URL=<sentry-url>
 export TESTING=True                         
+export UPLOADED_IMAGE_URL=<uploaded-image-url>
+
+# Test data credentials
+export TEST_USERNAME=<test-username>
+export TEST_PASSWORD=<test-password>
+export EMAIL_ADDRESS=<test-email-address>
+
 ```
 
 **To run**
@@ -47,6 +61,15 @@ $ coverage run -m unittest
 $ coverage report
 ```
 
+**To add sample data**
+
+```
+$ cd /home/vagrant/mypets
+$ source env/bin/activate
+$ source test.env
+$ python3 populate_data.py
+```
+
 **Sources**
 
 - https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
@@ -57,3 +80,4 @@ $ coverage report
 - https://www.pythoncentral.io/introductory-tutorial-python-sqlalchemy/
 - https://www.fullstackpython.com/flask-sqlalchemy-model-examples.html
 - https://www.w3schools.com/bootstrap4/default.asp
+- https://bootsnipp.com/snippets/DOXy4

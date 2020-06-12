@@ -1,12 +1,10 @@
 import os
 
 import sentry_sdk
-
 from flask import Flask
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import create_engine
-
 
 csrf = CSRFProtect()
 login_manager = LoginManager()
@@ -26,4 +24,4 @@ sentry_sdk.init(
     dsn=app.config["SENTRY_URI"], environment=app.config["SENTRY_ENVIRONMENT"]
 )
 
-from petsrus.views import main  # noqa
+from petsrus.views import main  # noqa isort:skip

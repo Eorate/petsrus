@@ -1,17 +1,15 @@
 # coding=utf-8
+import os
 import unittest
+import warnings
 from datetime import date, timedelta
+from io import BytesIO
 
 from petsrus.models.models import Pet, Schedule, User
 from petsrus.petsrus import app
-from petsrus.tests.helper import (
-    add_pet_helper,
-    add_pet_schedule_helper,
-    login_user_helper,
-    random_pet,
-    random_schedule,
-    register_user_helper,
-)
+from petsrus.tests.helper import (add_pet_helper, add_pet_schedule_helper,
+                                  login_user_helper, random_pet,
+                                  random_schedule, register_user_helper)
 from petsrus.views.main import db_session
 
 
@@ -81,6 +79,7 @@ class TestCasePets(unittest.TestCase):
 
     def test_pets_validate_name(self):
         """Test pet name validation"""
+        warnings.simplefilter("ignore", DeprecationWarning)
         register_user_helper(self.client)
         login_user_helper(self.client)
 
@@ -466,6 +465,31 @@ class TestCasePets(unittest.TestCase):
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
 
+    def test_delete_pets_with_schedules(self):
+        """Test POST /delete_pet/<int:pet_id> with schedules"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        add_pet_schedule_helper(self.db_session, pet, random_schedule())
+        add_pet_schedule_helper(self.db_session, pet, random_schedule())
+
+        self.assertEqual(2, self.db_session.query(Schedule).count())
+
+        # Delete Pet
+        response = self.client.post(
+            "/delete_pet/{}".format(pet.id), follow_redirects=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # No pets
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("No pets found." in response.get_data(as_text=True))
+
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 302)
+
     def test_add_pets(self):
         """Test POST /add_pet"""
         register_user_helper(self.client)
@@ -651,6 +675,78 @@ class TestCasePets(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(0, self.db_session.query(Schedule).count())
+
+    def test_update_pet_photo_validation(self):
+        """Test validation for updating a pet photo"""
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"image_file": (BytesIO("IMAGE DATA".encode()), "picture.jpg")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "No file part", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (BytesIO("IMAGE DATA".encode()), "")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "No selected photo", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (BytesIO("IMAGE DATA".encode()), "picture.wrong_extension")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "Photo type not allowed. Use png, gif, jpeg or jpg",
+            response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (BytesIO("IMAGE DATA".encode()), "picture.jpg")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "Unidentified Image Error", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_pet_photo(self):
+        """Test updating a pet photo"""
+        # https://github.com/boto/boto3/issues/454
+        # https://github.com/psf/requests/issues/3912
+        warnings.simplefilter("ignore", ResourceWarning)
+        register_user_helper(self.client)
+        login_user_helper(self.client)
+
+        pet = add_pet_helper(self.db_session, random_pet())
+        test_image = os.path.join("./petsrus/tests/assets/2020155847.jpg")
+        response = self.client.post(
+            "/update_pet_photo/{}".format(pet.id),
+            data={"photo": (test_image, "new_image.png",)},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        self.assertIn(
+            "Changed Pet Photo", response.get_data(as_text=True),
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 from enum import Enum
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -80,11 +81,16 @@ class Pet(Base):
     breed = Column(String(20), nullable=False)
     sex = Column(String(1), nullable=False)
     colour_and_identifying_marks = Column(String(200), nullable=False)
+    photo = Column(Text, nullable=True, default="default.png")
+
+    schedules = relationship(
+        "Schedule", backref="pet", cascade="all, delete, delete-orphan"
+    )
 
     def __repr__(self):
         return (
             "<Pet\nid: {}\nname: {}\ndate_of_birth: {}\nspecies: {}\nbreed: {}\n"
-            "sex: {}\ncolour_and_identifying_marks: {}\n>"
+            "sex: {}\ncolour_and_identifying_marks: {}\nphoto: {}\n>"
         ).format(
             self.id,
             self.name,
@@ -93,6 +99,7 @@ class Pet(Base):
             self.breed,
             self.sex,
             self.colour_and_identifying_marks,
+            self.photo,
         )
 
 
