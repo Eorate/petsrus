@@ -1,0 +1,12 @@
+Pre-requistes
+$ sudo apt-get install python3-pip lipq-dev
+$ python3 -m pip install -U pip
+
+Install petsRUs
+$ tar xvfz petsrus_cunning_locust.tar.gz
+$ cd petsrus_cunning_locust
+# To install system wide
+petsrus_cunning_locust$ sudo python3 setup.py install
+
+# Export the relevant environment variables. Have a look at the README for a sample.
+petsrus_cunning_locust$ gunicorn --bind localhost:5050 wsgi:app
