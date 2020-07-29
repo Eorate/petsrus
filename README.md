@@ -81,3 +81,5 @@ $ python3 populate_data.py
 - https://www.fullstackpython.com/flask-sqlalchemy-model-examples.html
 - https://www.w3schools.com/bootstrap4/default.asp
 - https://bootsnipp.com/snippets/DOXy4
+- https://dev.to/bowmanjd/python-dev-environment-part-3-dependencies-with-installrequires-and-requirements-txt-kk3
+- https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04

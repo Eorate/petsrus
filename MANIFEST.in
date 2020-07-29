@@ -1,0 +1,13 @@
+exclude *.pyc
+prune __pycache__
+recursive-include petsrus/templates *
+recursive-include petsrus/static *
+recursive-include petsrus/views *
+recursive-include petsrus/models *
+recursive-include petsrus/forms *
+recursive-include alembic *
+include wsgi.py
+include config.py
+include alembic.ini
+include requirements.txt
+include INSTALL.txt
