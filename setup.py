@@ -1,8 +1,16 @@
+import re
+
 from setuptools import setup
+
+with open("petsrus/semantic_release/__init__.py", "r") as fd:
+    version = re.search(
+        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE
+    ).group(1)
+
 
 setup(
     name="petsrus_cunning_locust",
-    version="0.0.0",
+    version=version,
     description="A flask application that keeps track of your pet details.",
     url="https://github.com/Eorate/petsrus.git",
     author="Tharlaw",
