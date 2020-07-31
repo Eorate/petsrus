@@ -73,16 +73,21 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
+            mkdir test-results
             # notify Code Climate of a pending test report using `before-build`
             ./cc-test-reporter before-build
             coverage run -m unittest
             coverage xml
+            cp coverage.xml test-results/
             # upload test report to Code Climate using `after-build`
             ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code $?
 
+      - store_test_results:
+          path: test-results
+
       - store_artifacts:
-          path: test-reports
-          destination: test-reports
+          path: test-results
+          destination: test-results
 
       - deploy:
           name: Deploy to Heroku

@@ -4,6 +4,7 @@ omit =
     # Everything in the virtual env
     */env/lib/*
     *venv/lib/*
+    *venv*
 
 [report]
 fail_under = 70
