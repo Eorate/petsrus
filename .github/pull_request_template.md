@@ -4,4 +4,4 @@ Why is the PR needed.
 
 **Reference**
 
-Pivotaltracker: `<link to PT story>`
+Trello: `<link to Trello Card>`
