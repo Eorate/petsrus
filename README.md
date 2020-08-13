@@ -53,9 +53,9 @@ $ source test.env
 # To run all tests
 $ python3 -m unittest
 # To run specific tests
-$ python3 -m unittest petsrus.tests.test_views
+$ python3 -m unittest petsrus.tests.test_pets
 or
-$ python3 -m unittest petsrus.tests.test_views.PetsRUsTests.test_edit_pets
+$ python3.8 -m unittest petsrus.tests.test_pets.TestCasePets.test_view_pet_schedules
 # To get coverage
 $ coverage run -m unittest
 $ coverage report
@@ -83,3 +83,4 @@ $ python3 populate_data.py
 - https://bootsnipp.com/snippets/DOXy4
 - https://dev.to/bowmanjd/python-dev-environment-part-3-dependencies-with-installrequires-and-requirements-txt-kk3
 - https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
+- https://www.youtube.com/watch?v=juPQ04_twtA
