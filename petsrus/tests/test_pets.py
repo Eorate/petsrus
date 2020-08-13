@@ -5,7 +5,7 @@ import warnings
 from datetime import date, timedelta
 from io import BytesIO
 
-from petsrus.models.models import Pet, Schedule, User
+from petsrus.models.models import Pet, Schedule, ScheduleType, User
 from petsrus.petsrus import app
 from petsrus.tests.helper import (add_pet_helper, add_pet_schedule_helper,
                                   login_user_helper, random_pet,
@@ -19,12 +19,18 @@ class TestCasePets(unittest.TestCase):
         self.client.testing = True
         self.db_session = db_session
         self.db_session.query(Schedule).delete()
+        self.db_session.query(ScheduleType).delete()
         self.db_session.query(Pet).delete()
         self.db_session.query(User).delete()
+        self.db_session.commit()
+        for schedule_type_name in ["Vaccine", "Deworming", "Frontline"]:
+            schedule_type = ScheduleType(name=schedule_type_name)
+            db_session.add(schedule_type)
         self.db_session.commit()
 
     def tearDown(self):
         self.db_session.query(Schedule).delete()
+        self.db_session.query(ScheduleType).delete()
         self.db_session.query(Pet).delete()
         self.db_session.query(User).delete()
         self.db_session.commit()
@@ -471,8 +477,8 @@ class TestCasePets(unittest.TestCase):
         login_user_helper(self.client)
 
         pet = add_pet_helper(self.db_session, random_pet())
-        add_pet_schedule_helper(self.db_session, pet, random_schedule())
-        add_pet_schedule_helper(self.db_session, pet, random_schedule())
+        add_pet_schedule_helper(self.db_session, pet, random_schedule(self.db_session))
+        add_pet_schedule_helper(self.db_session, pet, random_schedule(self.db_session))
 
         self.assertEqual(2, self.db_session.query(Schedule).count())
 
@@ -545,12 +551,17 @@ class TestCasePets(unittest.TestCase):
         login_user_helper(self.client)
 
         pet = add_pet_helper(self.db_session, random_pet())
+        vaccine = (
+            db_session.query(ScheduleType)
+            .filter(ScheduleType.name == "Vaccine")
+            .first()
+        )
 
         # Add Pet Schedule - No data entered
         response = self.client.post(
             "/add_schedule/{}".format(pet.id),
             data=dict(
-                schedule_type="VACCINE", date_of_next="", repeats="", repeat_cycle="",
+                schedule_type=vaccine.id, date_of_next="", repeats="", repeat_cycle="",
             ),
             follow_redirects=True,
         )
@@ -566,7 +577,7 @@ class TestCasePets(unittest.TestCase):
         response = self.client.post(
             "/add_schedule/{}".format(pet.id),
             data=dict(
-                schedule_type="VACCINE",
+                schedule_type=vaccine.id,
                 date_of_next="2001-02-01",
                 repeats="",
                 repeat_cycle="",
@@ -591,11 +602,15 @@ class TestCasePets(unittest.TestCase):
         login_user_helper(self.client)
 
         pet = add_pet_helper(self.db_session, random_pet())
-
+        vaccine = (
+            db_session.query(ScheduleType)
+            .filter(ScheduleType.name == "Vaccine")
+            .first()
+        )
         response = self.client.post(
             "/add_schedule/{}".format(pet.id),
             data=dict(
-                schedule_type="VACCINE",
+                schedule_type=vaccine.id,
                 date_of_next=date.today() + timedelta(days=1),
                 repeats="YES",
                 repeat_cycle="YEARLY",
@@ -611,11 +626,16 @@ class TestCasePets(unittest.TestCase):
         login_user_helper(self.client)
 
         pet = add_pet_helper(self.db_session, random_pet())
+        frontline = (
+            db_session.query(ScheduleType)
+            .filter(ScheduleType.name == "Frontline")
+            .first()
+        )
 
         response = self.client.post(
             "/add_schedule/{}".format(pet.id),
             data=dict(
-                schedule_type="FRONTLINE",
+                schedule_type=frontline.id,
                 date_of_next=date.today() + timedelta(days=2),
                 repeats="NO",
                 repeat_cycle=None,
@@ -631,9 +651,11 @@ class TestCasePets(unittest.TestCase):
         login_user_helper(self.client)
 
         pet = add_pet_helper(self.db_session, random_pet())
-        due_schedule = add_pet_schedule_helper(self.db_session, pet, random_schedule())
+        due_schedule = add_pet_schedule_helper(
+            self.db_session, pet, random_schedule(self.db_session)
+        )
         past_schedule = add_pet_schedule_helper(
-            self.db_session, pet, random_schedule(past=True)
+            self.db_session, pet, random_schedule(self.db_session, past=True)
         )
 
         self.assertEqual(2, self.db_session.query(Schedule).count())
@@ -643,7 +665,7 @@ class TestCasePets(unittest.TestCase):
         self.assertTrue(">{}</td>".format(pet.name) in response.get_data(as_text=True))
         self.assertTrue("<h5>Schedules</h5>" in response.get_data(as_text=True))
         self.assertTrue(
-            "<td>{}</td>".format(due_schedule.schedule_type.title())
+            "<td>{}</td>".format(due_schedule.schedule_types.name.title())
             in response.get_data(as_text=True)
         )
         self.assertTrue(
@@ -652,7 +674,7 @@ class TestCasePets(unittest.TestCase):
         )
         self.assertTrue("<h5>History</h5>" in response.get_data(as_text=True))
         self.assertTrue(
-            "<td>{}</td>".format(past_schedule.schedule_type.title())
+            "<td>{}</td>".format(past_schedule.schedule_types.name.title())
             in response.get_data(as_text=True)
         )
         self.assertTrue(
@@ -666,7 +688,9 @@ class TestCasePets(unittest.TestCase):
         login_user_helper(self.client)
 
         pet = add_pet_helper(self.db_session, random_pet())
-        pet_schedule = add_pet_schedule_helper(self.db_session, pet, random_schedule())
+        pet_schedule = add_pet_schedule_helper(
+            self.db_session, pet, random_schedule(self.db_session)
+        )
 
         self.assertEqual(1, self.db_session.query(Schedule).count())
 

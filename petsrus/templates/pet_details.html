@@ -128,7 +128,7 @@
             <tbody>
                 {% for schedule in due_schedules %}
               <tr>
-                  <td>{{schedule.schedule_type|title}}</td>
+                  <td>{{schedule.schedule_types.name|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
                   {% if schedule.repeat_cycle %}
@@ -198,7 +198,7 @@
             <tbody>
                 {% for schedule in past_schedules %}
               <tr>
-                  <td>{{schedule.schedule_type|title}}</td>
+                  <td>{{schedule.schedule_types.name|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
                   {% if schedule.repeat_cycle %}

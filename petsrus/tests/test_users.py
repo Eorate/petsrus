@@ -1,4 +1,5 @@
 # coding=utf-8
+import logging
 import unittest
 
 from petsrus.models.models import User
