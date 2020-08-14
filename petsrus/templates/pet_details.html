@@ -128,7 +128,7 @@
             <tbody>
                 {% for schedule in due_schedules %}
               <tr>
-                  <td>{{schedule.schedule_type|title}}</td>
+                  <td>{{schedule.schedule_types.name|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
                   {% if schedule.repeat_cycle %}
@@ -163,7 +163,7 @@
 
                         <!-- Modal body -->
                         <div class="modal-body">
-                            Are you sure you want to delete <b>{{schedule.schedule_type}}</b> for <b>{{schedule.date_of_next}}</b>?
+                            Are you sure you want to delete <b>{{schedule.schedule_types.name}}</b> for <b>{{schedule.date_of_next}}</b>?
                         </div>
 
                         <!-- Modal footer -->
@@ -198,7 +198,7 @@
             <tbody>
                 {% for schedule in past_schedules %}
               <tr>
-                  <td>{{schedule.schedule_type|title}}</td>
+                  <td>{{schedule.schedule_types.name|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
                   {% if schedule.repeat_cycle %}
