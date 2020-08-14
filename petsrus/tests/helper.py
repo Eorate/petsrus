@@ -2,8 +2,7 @@
 import random
 
 from faker import Faker
-
-from petsrus.models.models import Pet, Schedule
+from petsrus.models.models import Pet, Schedule, ScheduleType
 
 fake = Faker()
 
@@ -52,18 +51,17 @@ def random_pet():
     }
 
 
-def random_schedule(past=False):
+def random_schedule(db_session, past=False):
     """Create random pet schedules"""
-    schedule_type = fake.random_choices(
-        elements=("VACCINE", "DEWORMING", "FRONTLINE"), length=1
-    )[0]
+    schedule_types = [
+        schedule_type.id for schedule_type in db_session.query(ScheduleType).all()
+    ]
+    schedule_type = fake.random_choices(elements=schedule_types, length=1)[0]
     repeats = "YES" if random.randint(0, 1) == 0 else "NO"
     if repeats == "YES":
         repeat_cycle = fake.random_choices(
             elements=("MONTHLY", "QUARTERLY", "YEARLY"), length=1
         )[0]
-        if repeat_cycle == "YEARLY":
-            schedule_type = "VACCINE"
     else:
         repeat_cycle = None
     # We want some historical schedules

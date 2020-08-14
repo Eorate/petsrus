@@ -2,14 +2,25 @@ from datetime import date
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from wtforms import (IntegerField, PasswordField, RadioField, SelectField,
-                     StringField, SubmitField)
-from wtforms.fields.html5 import DateField
-from wtforms.validators import (DataRequired, Email, EqualTo, InputRequired,
-                                Length, Optional)
-
 from petsrus.forms.validators import FutureDate, PastDate
-from petsrus.models.models import Repeat, Repeat_cycle, Schedule_type
+from petsrus.models.models import Repeat, Repeat_cycle
+from wtforms import (
+    IntegerField,
+    PasswordField,
+    RadioField,
+    SelectField,
+    StringField,
+    SubmitField,
+)
+from wtforms.fields.html5 import DateField
+from wtforms.validators import (
+    DataRequired,
+    Email,
+    EqualTo,
+    InputRequired,
+    Length,
+    Optional,
+)
 
 
 class RegistrationForm(FlaskForm):
@@ -129,7 +140,7 @@ class PetScheduleForm(FlaskForm):
     repeat_cycle = RadioField(
         "Repeat Cycle:", choices=Repeat_cycle.__values__, validators=[Optional()]
     )
-    schedule_type = SelectField(choices=Schedule_type.__values__)
+    schedule_type = SelectField(u"Schedule Types", coerce=int)
     save = SubmitField("Save")
 
 

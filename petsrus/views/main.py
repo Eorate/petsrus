@@ -6,18 +6,17 @@ from datetime import date
 import boto3
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
+from petsrus.forms.forms import (ChangePetPhotoForm, LoginForm, PetForm,
+                                 PetScheduleForm, RegistrationForm)
+from petsrus.models.models import (Base, Pet, Repeat, Repeat_cycle, Schedule,
+                                   ScheduleType, User)
+from petsrus.petsrus import app, engine, login_manager
 from PIL import Image, UnidentifiedImageError
 from sentry_sdk import capture_exception
 from sqlalchemy import desc, exc
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-
-from petsrus.forms.forms import (ChangePetPhotoForm, LoginForm, PetForm,
-                                 PetScheduleForm, RegistrationForm)
-from petsrus.models.models import (Base, Pet, Repeat, Repeat_cycle, Schedule,
-                                   Schedule_type, User)
-from petsrus.petsrus import app, engine, login_manager
 
 Base.metadata.bind = engine
 Base.metadata.create_all()
@@ -244,10 +243,13 @@ def delete_pet(pet_id):
 @login_required
 def add_schedule(pet_id):
     form = PetScheduleForm(request.form)
+    form.schedule_type.choices = [
+        (schedule_type.id, schedule_type.name.upper())
+        for schedule_type in db_session.query(ScheduleType).order_by("name").all()
+    ]
     if request.method == "POST" and form.validate():
         try:
             pet = db_session.query(Pet).filter_by(id=pet_id).first()
-            form.schedule_type.choices = [Schedule_type.__values__]
             form.repeats.choices = [Repeat.__values__]
             form.repeat_cycle.choices = [Repeat_cycle.__values__]
             pet_schedule = Schedule(

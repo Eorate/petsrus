@@ -29,20 +29,10 @@ class Repeat(Enum):
     YES = "Yes"
     NO = "No"
 
-    @classproperty
-    def __values__(cls):
-        return [(repeat.name, repeat.value) for repeat in cls]
-
-
-class Schedule_type(Enum):
-    VACCINE = "Vaccine"
-    DEWORMING = "Deworming"
-    FRONTLINE = "Frontline"
-
     # http://xion.io/post/code/python-enums-are-ok.html
     @classproperty
     def __values__(cls):
-        return [(schedule_type.name, schedule_type.value) for schedule_type in cls]
+        return [(repeat.name, repeat.value) for repeat in cls]
 
 
 class User(Base):
@@ -110,17 +100,31 @@ class Schedule(Base):
     date_of_next = Column(Date(), nullable=False)
     repeats = Column(String(3), nullable=False)
     repeat_cycle = Column(String(10), nullable=True)
-    schedule_type = Column(String(10), nullable=False)
+    schedule_type = Column(Integer, ForeignKey("schedule_types.id"), nullable=True)
+
+    schedule_types = relationship("ScheduleType", backref="schedule_types")
 
     def __repr__(self):
         return (
             "<Schedule\nid: {}\npet_id: {}\ndate_of_next: {}\nrepeats: {}\n"
-            "repeat_cycle: {}\nschedule_type: {}\n>"
+            "repeat_cycle: {}\nschedule_type_id:{}\nschedule_type_name: {}\n>"
         ).format(
             self.id,
             self.pet_id,
             self.date_of_next,
             self.repeats,
             self.repeat_cycle,
-            self.schedule_type,
+            self.schedule_types.id,
+            self.schedule_types.name,
+        )
+
+
+class ScheduleType(Base):
+    __tablename__ = "schedule_types"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(20), nullable=False)
+
+    def __repr__(self):
+        return ("<ScheduleType\nid: {}\nschedule_type: {}\n>").format(
+            self.id, self.name,
         )
