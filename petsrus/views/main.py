@@ -191,10 +191,18 @@ def update_pet_photo(pet_id):
         return redirect(url_for("view_pet", pet_id=pet_id))
 
 
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("404.html", message=error), 404
+
+
 @app.route("/view_pet/<int:pet_id>", methods=["GET"])
 @login_required
 def view_pet(pet_id):
     pet = db_session.query(Pet).filter_by(id=pet_id).first()
+    if pet is None:
+        return page_not_found("Sorry, Pet does not exist.")
+
     form = ChangePetPhotoForm()
     due = (
         db_session.query(Schedule)

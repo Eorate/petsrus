@@ -542,6 +542,14 @@ class TestCasePets(unittest.TestCase):
             in response.get_data(as_text=True)
         )
 
+        # Attempting to view unknown pets should return a 404
+        response = self.client.get("/view_pet/{}".format(0))
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(
+            "h5>{}</h5".format("Sorry, Pet does not exist.")
+            in response.get_data(as_text=True)
+        )
+
         response = self.client.get("/logout")
         self.assertEqual(response.status_code, 302)
 
