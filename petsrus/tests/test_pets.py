@@ -5,11 +5,16 @@ import warnings
 from datetime import date, timedelta
 from io import BytesIO
 
-from petsrus.models.models import Pet, Schedule, ScheduleType, User
+from petsrus.models.models import Pet, RepeatCycle, Schedule, ScheduleType, User
 from petsrus.petsrus import app
-from petsrus.tests.helper import (add_pet_helper, add_pet_schedule_helper,
-                                  login_user_helper, random_pet,
-                                  random_schedule, register_user_helper)
+from petsrus.tests.helper import (
+    add_pet_helper,
+    add_pet_schedule_helper,
+    login_user_helper,
+    random_pet,
+    random_schedule,
+    register_user_helper,
+)
 from petsrus.views.main import db_session
 
 
@@ -26,11 +31,15 @@ class TestCasePets(unittest.TestCase):
         for schedule_type_name in ["Vaccine", "Deworming", "Frontline"]:
             schedule_type = ScheduleType(name=schedule_type_name)
             db_session.add(schedule_type)
+        for repeat_cycle_name in ["Monthly", "Quarterly", "Yearly"]:
+            repeat_cycle = RepeatCycle(name=repeat_cycle_name)
+            db_session.add(repeat_cycle)
         self.db_session.commit()
 
     def tearDown(self):
         self.db_session.query(Schedule).delete()
         self.db_session.query(ScheduleType).delete()
+        self.db_session.query(RepeatCycle).delete()
         self.db_session.query(Pet).delete()
         self.db_session.query(User).delete()
         self.db_session.commit()
@@ -615,13 +624,16 @@ class TestCasePets(unittest.TestCase):
             .filter(ScheduleType.name == "Vaccine")
             .first()
         )
+        yearly = (
+            db_session.query(RepeatCycle).filter(RepeatCycle.name == "Yearly").first()
+        )
         response = self.client.post(
             "/add_schedule/{}".format(pet.id),
             data=dict(
                 schedule_type=vaccine.id,
                 date_of_next=date.today() + timedelta(days=1),
                 repeats="YES",
-                repeat_cycle="YEARLY",
+                repeat_cycle=yearly.id,
             ),
             follow_redirects=True,
         )

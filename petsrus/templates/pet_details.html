@@ -131,8 +131,8 @@
                   <td>{{schedule.schedule_types.name|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
-                  {% if schedule.repeat_cycle %}
-                    <td>{{schedule.repeat_cycle}}</td>
+                  {% if schedule.repeat_cycles.name %}
+                    <td>{{schedule.repeat_cycles.name}}</td>
                   {% else %}
                     <td>&mdash;</td>
                   {% endif %}
@@ -201,8 +201,8 @@
                   <td>{{schedule.schedule_types.name|title}}</td>
                   <td>{{schedule.date_of_next}}</td>
                   <td>{{schedule.repeats}}</td>
-                  {% if schedule.repeat_cycle %}
-                    <td>{{schedule.repeat_cycle}}</td>
+                  {% if schedule.repeat_cycles.name %}
+                    <td>{{schedule.repeat_cycles.name}}</td>
                   {% else %}
                     <td>&mdash;</td>
                   {% endif %}
