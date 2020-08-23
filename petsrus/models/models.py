@@ -15,16 +15,6 @@ class classproperty:
         return self._func(owner)
 
 
-class Repeat_cycle(Enum):
-    MONTHLY = "Monthly"
-    QUARTERLY = "Quarterly"
-    YEARLY = "Yearly"
-
-    @classproperty
-    def __values__(cls):
-        return [(repeat_cycle.name, repeat_cycle.value) for repeat_cycle in cls]
-
-
 class Repeat(Enum):
     YES = "Yes"
     NO = "No"
@@ -99,10 +89,11 @@ class Schedule(Base):
     pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
     date_of_next = Column(Date(), nullable=False)
     repeats = Column(String(3), nullable=False)
-    repeat_cycle = Column(String(10), nullable=True)
+    repeat_cycle = Column(Integer, ForeignKey("repeat_cycles.id"), nullable=True)
     schedule_type = Column(Integer, ForeignKey("schedule_types.id"), nullable=True)
 
     schedule_types = relationship("ScheduleType", backref="schedule_types")
+    repeat_cycles = relationship("RepeatCycle", backref="repeat_cycles")
 
     def __repr__(self):
         return (
@@ -113,7 +104,8 @@ class Schedule(Base):
             self.pet_id,
             self.date_of_next,
             self.repeats,
-            self.repeat_cycle,
+            self.repeat_cycles.id,
+            self.repeat_cycles.name,
             self.schedule_types.id,
             self.schedule_types.name,
         )
@@ -128,3 +120,12 @@ class ScheduleType(Base):
         return ("<ScheduleType\nid: {}\nschedule_type: {}\n>").format(
             self.id, self.name,
         )
+
+
+class RepeatCycle(Base):
+    __tablename__ = "repeat_cycles"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(20), nullable=False)
+
+    def __repr__(self):
+        return ("<RepeatCycle\nid: {}\nrepeat_cycle: {}\n>").format(self.id, self.name,)
