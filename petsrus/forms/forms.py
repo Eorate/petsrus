@@ -3,7 +3,7 @@ from datetime import date
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from petsrus.forms.validators import FutureDate, PastDate
-from petsrus.models.models import Repeat, Repeat_cycle
+from petsrus.models.models import Repeat
 from wtforms import (
     IntegerField,
     PasswordField,
@@ -137,9 +137,7 @@ class PetScheduleForm(FlaskForm):
         choices=Repeat.__values__,
         validators=[InputRequired(message="Please select either Yes or No")],
     )
-    repeat_cycle = RadioField(
-        "Repeat Cycle:", choices=Repeat_cycle.__values__, validators=[Optional()]
-    )
+    repeat_cycle = RadioField(u"Repeat Cycle:", coerce=int, validators=[Optional()])
     schedule_type = SelectField(u"Schedule Types", coerce=int)
     save = SubmitField("Save")
 

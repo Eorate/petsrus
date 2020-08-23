@@ -5,7 +5,7 @@
 import os
 import random
 
-from petsrus.models.models import Pet, Schedule, ScheduleType, User
+from petsrus.models.models import Pet, RepeatCycle, Schedule, ScheduleType, User
 from petsrus.tests.helper import (
     add_pet_helper,
     add_pet_schedule_helper,
@@ -18,6 +18,7 @@ from werkzeug.security import generate_password_hash
 # Drop previous data
 db_session.query(Schedule).delete()
 db_session.query(ScheduleType).delete()
+db_session.query(RepeatCycle).delete()
 db_session.query(Pet).delete()
 db_session.query(User).delete()
 
@@ -33,6 +34,10 @@ db_session.add(user)
 for schedule_type_name in ["Vaccine", "Deworming", "Frontline"]:
     schedule_type = ScheduleType(name=schedule_type_name)
     db_session.add(schedule_type)
+
+for repeat_cycle_name in ["Monthly", "Quarterly", "Yearly"]:
+    repeat_cycle = RepeatCycle(name=repeat_cycle_name)
+    db_session.add(repeat_cycle)
 
 db_session.commit()
 
