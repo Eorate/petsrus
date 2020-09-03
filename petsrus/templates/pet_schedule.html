@@ -80,24 +80,23 @@ document.getElementById('repeats-0').onchange = displayTextBox;
 // "No" Radio button
 document.getElementById('repeats-1').onchange = displayTextBox;
 
-var monthlyRadioButton = document.getElementById('repeat_cycle-0');
-var quarterlyRadioButton = document.getElementById('repeat_cycle-1');
-var yearlyRadioButton = document.getElementById('repeat_cycle-2');
-monthlyRadioButton.disabled = true;
-quarterlyRadioButton.disabled = true;
-yearlyRadioButton.disabled = true;
+var repeat_cycles = document.getElementsByName("repeat_cycle");
+// The repeat cycle radio buttons are disabled by default
+repeat_cycle(repeat_cycles, true);
+
 
 function displayTextBox(evt) {
     if(evt.target.value == "YES") {
-        monthlyRadioButton.disabled = false;
-        quarterlyRadioButton.disabled = false;
-        yearlyRadioButton.disabled = false;
-        yearlyRadioButton.checked = true;
+        repeat_cycle(repeat_cycles, false)
     } else {
-        monthlyRadioButton.disabled = true;
-        quarterlyRadioButton.disabled = true;
-        yearlyRadioButton.disabled = true;
-        yearlyRadioButton.checked = false;
+        repeat_cycle(repeat_cycles, true)
+    }
+}
+
+function repeat_cycle(repeatCycle, isDisabled) {
+    var repeat_cycles_length = repeatCycle.length;
+    for(var i=0; i<repeat_cycles_length; i++){
+        repeat_cycles[i].disabled=isDisabled;
     }
 }
 

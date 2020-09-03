@@ -2,7 +2,7 @@ from datetime import date
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from petsrus.forms.validators import FutureDate, PastDate
+from petsrus.forms.validators import ExistingRepeatCycle, FutureDate, PastDate
 from petsrus.models.models import Repeat
 from wtforms import (
     IntegerField,
@@ -145,3 +145,19 @@ class PetScheduleForm(FlaskForm):
 class ChangePetPhotoForm(FlaskForm):
     photo = FileField()
     save = SubmitField("Upload Photo")
+
+
+class RepeatCycleForm(FlaskForm):
+    name = StringField(
+        "Name:",
+        validators=[
+            InputRequired(message="Please provide a Repeat Cycle eg Daily, Weekly etc"),
+            Length(
+                min=5,
+                max=20,
+                message="Name must be between 5 to 20 characters in length",
+            ),
+            ExistingRepeatCycle(message="Sorry, this Repeat Cycle already exists"),
+        ],
+    )
+    save = SubmitField("Add Repeat Cycle")
