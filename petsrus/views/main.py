@@ -6,13 +6,13 @@ from datetime import date
 import boto3
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
-from petsrus.forms.forms import (
-    ChangePetPhotoForm,
-    LoginForm,
-    PetForm,
-    PetScheduleForm,
-    RegistrationForm,
-)
+from PIL import Image, UnidentifiedImageError
+from sentry_sdk import capture_exception
+from sqlalchemy import desc, exc
+from sqlalchemy.orm import sessionmaker
+from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
+
 from petsrus.models.models import (
     Base,
     Pet,
@@ -23,17 +23,27 @@ from petsrus.models.models import (
     User,
 )
 from petsrus.petsrus import app, engine, login_manager
-from PIL import Image, UnidentifiedImageError
-from sentry_sdk import capture_exception
-from sqlalchemy import desc, exc
-from sqlalchemy.orm import sessionmaker
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
 
 Base.metadata.bind = engine
 Base.metadata.create_all()
 DBSession = sessionmaker(bind=engine)
 db_session = DBSession()
+
+# We need these imports down here to prevent the following error
+# ```
+# ImportError: cannot import name 'db_session' from partially initialized module
+# 'petsrus.views.main' (most likely due to a circular import)
+# (/home/vagrant/lavoro/petsrus/petsrus/views/main.py)
+# ```
+from petsrus.forms.forms import (  # noqa isort:skip
+    ChangePetPhotoForm,
+    LoginForm,
+    PetForm,
+    PetScheduleForm,
+    RegistrationForm,
+    RepeatCycleForm,
+    ScheduleTypeForm,
+)
 
 # Dimensions of resized pet images
 WIDTH = 400
@@ -97,7 +107,8 @@ def add_pet():
             return redirect(url_for("index"))
         except Exception as exc:
             flash(
-                "An unexpected issue occured while attempting to add a pet", "danger",
+                "An unexpected issue occured while attempting to add a pet",
+                "danger",
             )
             app.logger.error(traceback.format_exc())
             capture_exception(exc)
@@ -131,7 +142,8 @@ def edit_pet(pet_id):
             app.logger.error(traceback.format_exc())
             capture_exception(exc)
             flash(
-                "An unexpected issue occured while attempting to update pet", "danger",
+                "An unexpected issue occured while attempting to update pet",
+                "danger",
             )
             return render_template("pets.html", edit=True, form=form, pet_id=pet_id)
     else:
@@ -314,6 +326,78 @@ def delete_schedule(schedule_id):
             app.logger.error(traceback.format_exc())
             capture_exception(exc)
         return redirect(url_for("view_pet", pet_id=schedule.pet_id))
+
+
+@app.route("/settings", methods=["GET"])
+@login_required
+def settings():
+    repeat_cycle_form = RepeatCycleForm(request.form)
+    schedule_type_form = ScheduleTypeForm(request.form)
+    return render_template(
+        "settings.html",
+        repeat_cycle_form=repeat_cycle_form,
+        schedule_type_form=schedule_type_form,
+    )
+
+
+@app.route("/settings/account_details/repeat_cycles", methods=["GET", "POST"])
+@login_required
+def settings_account_details_repeat_cycles():
+    repeat_cycle_form = RepeatCycleForm(request.form)
+    # Need to keep the schedule type form here as it will be required if we have any
+    # validation errors that result in the template getting re-rendered.
+    schedule_type_form = ScheduleTypeForm(request.form)
+    if request.method == "POST" and repeat_cycle_form.validate():
+        try:
+            repeat_cycle = RepeatCycle(
+                name=repeat_cycle_form.repeat_cycle_name.data,
+            )
+            db_session.add(repeat_cycle)
+            db_session.commit()
+            flash("Saved Repeat Cycle", "success")
+        except Exception as exc:
+            flash(
+                "An unexpected issue occured while attempting to add a Repeat Cycle",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
+            capture_exception(exc)
+        return redirect(url_for("settings"))
+    return render_template(
+        "settings.html",
+        repeat_cycle_form=repeat_cycle_form,
+        schedule_type_form=schedule_type_form,
+    )
+
+
+@app.route("/settings/account_details/schedule_types", methods=["GET", "POST"])
+@login_required
+def settings_account_details_schedule_types():
+    schedule_type_form = ScheduleTypeForm(request.form)
+    # Need to keep the repeat cycle form here as it will be required if we have any
+    # validation errors that result in the template getting re-rendered.
+    repeat_cycle_form = RepeatCycleForm(request.form)
+    if request.method == "POST" and schedule_type_form.validate():
+        try:
+            schedule_type = ScheduleType(
+                name=schedule_type_form.schedule_type_name.data,
+            )
+            db_session.add(schedule_type)
+            db_session.commit()
+            flash("Saved Schedule Type", "success")
+        except Exception as exc:
+            flash(
+                "An unexpected issue occured while attempting to add a Schedule Type",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
+            capture_exception(exc)
+        return redirect(url_for("settings"))
+    return render_template(
+        "settings.html",
+        schedule_type_form=schedule_type_form,
+        repeat_cycle_form=repeat_cycle_form,
+    )
 
 
 @app.route("/", methods=["GET", "POST"])

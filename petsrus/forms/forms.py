@@ -2,8 +2,6 @@ from datetime import date
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from petsrus.forms.validators import FutureDate, PastDate
-from petsrus.models.models import Repeat
 from wtforms import (
     IntegerField,
     PasswordField,
@@ -21,6 +19,9 @@ from wtforms.validators import (
     Length,
     Optional,
 )
+
+from petsrus.forms.validators import ExistingName, FutureDate, PastDate
+from petsrus.models.models import Repeat, RepeatCycle, ScheduleType
 
 
 class RegistrationForm(FlaskForm):
@@ -145,3 +146,41 @@ class PetScheduleForm(FlaskForm):
 class ChangePetPhotoForm(FlaskForm):
     photo = FileField()
     save = SubmitField("Upload Photo")
+
+
+class RepeatCycleForm(FlaskForm):
+    repeat_cycle_name = StringField(
+        "Name:",
+        validators=[
+            InputRequired(message="Please provide a Repeat Cycle eg Daily, Weekly etc"),
+            Length(
+                min=5,
+                max=20,
+                message="Name must be between 5 to 20 characters in length",
+            ),
+            ExistingName(
+                RepeatCycle, message="Sorry, this Repeat Cycle already exists"
+            ),
+        ],
+    )
+    save = SubmitField("Add Repeat Cycle")
+
+
+class ScheduleTypeForm(FlaskForm):
+    schedule_type_name = StringField(
+        "Name:",
+        validators=[
+            InputRequired(
+                message="Please provide a Schedule Type eg Deworming, Vaccine etc"
+            ),
+            Length(
+                min=5,
+                max=20,
+                message="Name must be between 5 to 20 characters in length",
+            ),
+            ExistingName(
+                ScheduleType, message="Sorry, this Schedule Type already exists"
+            ),
+        ],
+    )
+    save = SubmitField("Add Schedule Type")
