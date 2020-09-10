@@ -42,6 +42,7 @@ from petsrus.forms.forms import (  # noqa isort:skip
     PetScheduleForm,
     RegistrationForm,
     RepeatCycleForm,
+    ScheduleTypeForm,
 )
 
 # Dimensions of resized pet images
@@ -331,17 +332,25 @@ def delete_schedule(schedule_id):
 @login_required
 def settings():
     repeat_cycle_form = RepeatCycleForm(request.form)
-    return render_template("settings.html", repeat_cycle_form=repeat_cycle_form)
+    schedule_type_form = ScheduleTypeForm(request.form)
+    return render_template(
+        "settings.html",
+        repeat_cycle_form=repeat_cycle_form,
+        schedule_type_form=schedule_type_form,
+    )
 
 
-@app.route("/settings/account_details", methods=["GET", "POST"])
+@app.route("/settings/account_details/repeat_cycles", methods=["GET", "POST"])
 @login_required
-def settings_account_details():
+def settings_account_details_repeat_cycles():
     repeat_cycle_form = RepeatCycleForm(request.form)
+    # Need to keep the schedule type form here as it will be required if we have any
+    # validation errors that result in the template getting re-rendered.
+    schedule_type_form = ScheduleTypeForm(request.form)
     if request.method == "POST" and repeat_cycle_form.validate():
         try:
             repeat_cycle = RepeatCycle(
-                name=repeat_cycle_form.name.data.title(),
+                name=repeat_cycle_form.repeat_cycle_name.data,
             )
             db_session.add(repeat_cycle)
             db_session.commit()
@@ -354,7 +363,41 @@ def settings_account_details():
             app.logger.error(traceback.format_exc())
             capture_exception(exc)
         return redirect(url_for("settings"))
-    return render_template("settings.html", repeat_cycle_form=repeat_cycle_form)
+    return render_template(
+        "settings.html",
+        repeat_cycle_form=repeat_cycle_form,
+        schedule_type_form=schedule_type_form,
+    )
+
+
+@app.route("/settings/account_details/schedule_types", methods=["GET", "POST"])
+@login_required
+def settings_account_details_schedule_types():
+    schedule_type_form = ScheduleTypeForm(request.form)
+    # Need to keep the repeat cycle form here as it will be required if we have any
+    # validation errors that result in the template getting re-rendered.
+    repeat_cycle_form = RepeatCycleForm(request.form)
+    if request.method == "POST" and schedule_type_form.validate():
+        try:
+            schedule_type = ScheduleType(
+                name=schedule_type_form.schedule_type_name.data,
+            )
+            db_session.add(schedule_type)
+            db_session.commit()
+            flash("Saved Schedule Type", "success")
+        except Exception as exc:
+            flash(
+                "An unexpected issue occured while attempting to add a Schedule Type",
+                "danger",
+            )
+            app.logger.error(traceback.format_exc())
+            capture_exception(exc)
+        return redirect(url_for("settings"))
+    return render_template(
+        "settings.html",
+        schedule_type_form=schedule_type_form,
+        repeat_cycle_form=repeat_cycle_form,
+    )
 
 
 @app.route("/", methods=["GET", "POST"])

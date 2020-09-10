@@ -5,47 +5,82 @@
 
 {% block content %}
 
-{% if current_user.is_authenticated %}
-    <div class="container p-3">
-    <h5>Settings</h5>
-    <div class="row">
-        <div class="col-sm-3 col-md-3">
-            <table class="table table-striped table-bordered table-hover">
-                <tr class="d-flex">
-                    <td class="col-12">Account Details</td>
-                </tr>
-            </table>
-        </div> <!-- end div class col 3-->
-        <div class="col-sm-9 col-md-9 d-flex align-self-upper flex-column">
-    <div class="container p-3 border rounded bg-light">
-    <h6 class="text-center">Add Repeat Cycle</h6>
-    <form action="{{ url_for('settings_account_details') }}" method=post class="form-horizontal">
-        {{ repeat_cycle_form.csrf_token }}
-        
-    <div class="form-group row">
-        <div class="col-sm-3">
-      {{ repeat_cycle_form.name.label(class="col-form-label")}}
-          </div>
-        <div class="col-sm-9">
-          {{ repeat_cycle_form.name(class="form-control", required=False) | safe }}
-              {% if repeat_cycle_form.name.errors %}
-                  {% for error in repeat_cycle_form.name.errors %}
-                    <div class="text-danger small">{{ error }}</div>
-                  {% endfor %}
-              {% endif %}
-          </div>
-      </div>
-      <div class="text-center">
-          <a href="{{ url_for('index') }}"
-             class="btn btn-secondary w-25"
-             role="button">Cancel</a>
-          <button type="submit" class="btn btn-primary w-25">Save</button>
-      </div>
-    </form>
-    </div>
-        </div> <!-- end div class col 9-->
-    </div> <!-- end div class row -->
-    </div> <!-- end div class container p-3 -->
-{% endif %}
+    {% if current_user.is_authenticated %}
+        <div class="container p-3">
+            <h5>Settings</h5>
+            <div class="row">
+                <div class="col-sm-3 col-md-3">
+                    <table class="table table-striped table-bordered table-hover">
+                        <tr class="d-flex">
+                            <td class="col-12">Account Details</td>
+                        </tr>
+                    </table>
+                </div> <!-- end div class col 3-->
+                <div class="col-sm-9 col-md-9 d-flex align-self-upper flex-column">
+                    <div class="container p-3 border rounded bg-light">
+                        <h6 class="text-center">Add Repeat Cycle</h6>
+                        <form action="{{ url_for('settings_account_details_repeat_cycles') }}"
+                              method=post
+                              class="form-horizontal"
+                              >
+                              {{ repeat_cycle_form.csrf_token }}
+
+                              <div class="form-group row">
+                                  <div class="col-sm-3">
+                                      {{ repeat_cycle_form.repeat_cycle_name.label(class="col-form-label")}}
+                                  </div>
+                            <div class="col-sm-9">
+                                {{ repeat_cycle_form.repeat_cycle_name(class="form-control", required=False) | safe }}
+                                {% if repeat_cycle_form.repeat_cycle_name.errors %}
+                                    {% for error in repeat_cycle_form.repeat_cycle_name.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                              </div>
+                              <div class="text-center">
+                                  <a href="{{ url_for('index') }}"
+                                     class="btn btn-secondary w-25"
+                                     role="button">Cancel</a>
+                                  <button type="submit" class="btn btn-primary w-25">Save</button>
+                              </div>
+                        </form>
+                    </div>
+
+                    <br />
+                    <div class="container p-3 border rounded bg-light">
+                        <h6 class="text-center">Add Schedule Type</h6>
+                        <form action="{{ url_for('settings_account_details_schedule_types') }}"
+                              method=post
+                              class="form-horizontal"
+                              >
+                              {{ schedule_type_form.csrf_token }}
+
+                              <div class="form-group row">
+                                  <div class="col-sm-3">
+                                      {{ schedule_type_form.schedule_type_name.label(class="col-form-label")}}
+                                  </div>
+                            <div class="col-sm-9">
+                                {{ schedule_type_form.schedule_type_name(class="form-control", required=False) | safe }}
+                                {% if schedule_type_form.schedule_type_name.errors %}
+                                    {% for error in schedule_type_form.schedule_type_name.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                              </div>
+                              <div class="text-center">
+                                  <a href="{{ url_for('index') }}"
+                                     class="btn btn-secondary w-25"
+                                     role="button">Cancel</a>
+                                  <button type="submit" class="btn btn-primary w-25">Save</button>
+                              </div>
+                        </form>
+                    </div>
+
+                </div> <!-- end div class col 9-->
+            </div> <!-- end div class row -->
+        </div> <!-- end div class container p-3 -->
+    {% endif %}
 
 {% endblock content %}
