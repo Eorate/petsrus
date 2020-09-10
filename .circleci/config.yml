@@ -10,6 +10,7 @@ jobs:
         - master
         - develop
         - /ft-.*/
+        - /feat-.*/
         - /infra.*/
         - /fix-.*/
         - /chore-.*/
