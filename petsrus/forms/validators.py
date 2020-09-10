@@ -1,9 +1,10 @@
 from datetime import date
 
-from petsrus.models.models import RepeatCycle
-from petsrus.views.main import db_session
 from sqlalchemy import func
 from wtforms.validators import ValidationError
+
+from petsrus.models.models import RepeatCycle
+from petsrus.views.main import db_session
 
 
 class PastDate(object):
@@ -30,17 +31,18 @@ class FutureDate(object):
             raise ValidationError(self.message)
 
 
-class ExistingRepeatCycle(object):
-    def __init__(self, message=None):
+class ExistingName(object):
+    def __init__(self, table_name, message=None):
         if not message:
-            message = u"This Repeat Cycle already exists"
+            message = u"This name already exists"
         self.message = message
+        self.table_name = table_name
 
     def __call__(self, form, field):
-        repeat_cycles = (
-            db_session.query(RepeatCycle)
-            .filter(func.lower(RepeatCycle.name) == func.lower(field.data))
+        names = (
+            db_session.query(self.table_name)
+            .filter(func.lower(self.table_name.name) == func.lower(field.data))
             .all()
         )
-        if repeat_cycles:
+        if names:
             raise ValidationError(self.message)
