@@ -22,7 +22,7 @@ setup(
         "alembic",
         "boto3",
         "email-validator",
-        "flask",
+        "Flask==1.1.2",
         "Flask-Login",
         "Flask-SQLAlchemy",
         "Flask-WTF",
@@ -32,6 +32,7 @@ setup(
         "SQLAlchemy",
         "Werkzeug",
         "sentry-sdk",
+        "WTForms==2.3.3",
     ],
     zip_safe=False,
 )
