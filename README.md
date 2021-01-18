@@ -70,6 +70,12 @@ $ source test.env
 $ python3 populate_data.py
 ```
 
+**To run with Docker**
+```
+$ docker build -t my-petsrus-image .
+$ docker run --env-file .env --rm --name my-petsrus-app my-petsrus-image
+```
+
 **Sources**
 
 - https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
@@ -84,3 +90,5 @@ $ python3 populate_data.py
 - https://dev.to/bowmanjd/python-dev-environment-part-3-dependencies-with-installrequires-and-requirements-txt-kk3
 - https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
 - https://www.youtube.com/watch?v=juPQ04_twtA
+- https://flask.palletsprojects.com/en/1.1.x/patterns/distribute/
+- https://packaging.python.org/tutorials/packaging-projects/
