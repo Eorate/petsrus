@@ -22,7 +22,7 @@ setup(
         "alembic",
         "boto3",
         "email-validator",
-        "Flask==1.1.2",
+        "Flask==2.3.2",
         "Flask-Login",
         "Flask-SQLAlchemy",
         "Flask-WTF",
